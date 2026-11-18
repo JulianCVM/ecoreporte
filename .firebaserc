@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "demo-ecoreporte"
+    "default": "demo-ecoreporte",
+    "dev": "ecoreporte-dev"
   }
 }

@@ -1,104 +1,142 @@
 # 04 · Infraestructura
 
-> Todo lo que existe fuera del código: proyectos, recursos, permisos, entornos, CI/CD, costos y la puesta en marcha desde cero. Base común: `../../planeacion/00-estandar-tecnico-comun.md` (fuera de este repo).
+> Todo lo que existe fuera del código: proyectos, recursos, permisos, entornos, CI/CD, costos y la puesta en marcha desde cero. Base común: `planeacion/00-estandar-tecnico-comun.md` de la carpeta `AppsMoviles` (fuera de este repo).
 
-## Proyectos y entornos
+## Principio: costo cero hoy, producción proyectada ([ADR 0007](adr/0007-costo-cero-con-spark-y-emuladores.md))
 
-| Entorno | Proyecto de Firebase/GCP                     | Variante de la app                   | Paquete Android                |
-| ------- | -------------------------------------------- | ------------------------------------ | ------------------------------ |
-| `local` | Emulator Suite (`demo-ecoreporte`, sin nube) | `development`                        | `com.juliancvm.ecoreporte.dev` |
-| `dev`   | `ecoreporte-dev`                             | `development` / `preview`            | `com.juliancvm.ecoreporte.dev` |
-| `prod`  | `ecoreporte-prod`                            | `production` y el APK del portafolio | `com.juliancvm.ecoreporte`     |
+No hay presupuesto, así que **nada de lo que hoy corre puede pedir tarjeta**.
 
-`.firebaserc` define los alias `dev` y `prod`. El nombre `demo-*` hace que los emuladores no intenten hablar con la nube.
+- **Desarrollo:** todo lo que en la nube exige el plan Blaze (Cloud Functions, Storage, Vertex AI) corre en la **Firebase Emulator Suite**, en el PC.
+- **Proyecto en la nube `ecoreporte-dev`, plan Spark (gratis):** solo se usa para lo que es gratis y no se puede emular: la configuración de la app, FCM, Crashlytics, Analytics y Remote Config.
+- **Producción:** queda **diseñada y costeada**, lista para activarse con plan Blaze el día que haya presupuesto, sin cambiar el código: solo cambian la configuración y los parámetros.
 
-## Recursos por proyecto
+## Entornos
 
-| Recurso                    | Configuración                                                                                                   | Región                                         |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Plan                       | **Blaze** + presupuesto de USD 10/mes con alertas al 50/90/100 %                                                | —                                              |
-| Firestore                  | Modo nativo, base `(default)`, copias de seguridad programadas diarias con retención de 7 días                  | `us-east1` (**no se puede cambiar**, ADR 0005) |
-| Cloud Storage for Firebase | Bucket por defecto                                                                                              | `us-east1`                                     |
-| Cloud Functions 2.ª gen    | `classifyReportPhoto` (Storage), `onReportStatusChange` (Firestore), `purgeRejectedPhotos` (programada, diaria) | `us-east1`                                     |
-| Vertex AI                  | API habilitada; modelo en `GEMINI_MODEL`                                                                        | `VERTEX_LOCATION` (por defecto `us-east1`)     |
-| Authentication             | Correo/contraseña y Google                                                                                      | —                                              |
-| FCM                        | Temas `operators` y por usuario (token)                                                                         | —                                              |
-| App Check                  | Play Integrity (Android), DeviceCheck/App Attest (iOS); token de depuración en dev                              | —                                              |
-| Crashlytics, Analytics     | Habilitados                                                                                                     | —                                              |
-| Remote Config              | Plantilla con las claves de `05-parametrizacion.md`                                                             | —                                              |
-| Maps SDK for Android/iOS   | Clave restringida por paquete + SHA-1 y por API                                                                 | —                                              |
+| Entorno                     | Qué corre dónde                                                                                                                                                                   | Variante de la app | Paquete Android                | Costo                       |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------------------ | --------------------------- |
+| `local` (**el de trabajo**) | Auth, Firestore, Storage y Functions en los emuladores. IA con `AI_PROVIDER=gemini-api` (capa gratuita) o `mock`. FCM, Crashlytics, Analytics y Remote Config en `ecoreporte-dev` | `development`      | `com.juliancvm.ecoreporte.dev` | USD 0                       |
+| `ci`                        | Emuladores dentro de GitHub Actions, IA en `mock`                                                                                                                                 | —                  | —                              | USD 0 (repositorio público) |
+| `prod` (**proyectado**)     | Todo en `ecoreporte-prod` con plan Blaze; IA en Vertex AI                                                                                                                         | `production`       | `com.juliancvm.ecoreporte`     | Ver «Costos proyectados»    |
 
-**APIs que se habilitan:** Firestore, Cloud Storage, Cloud Functions, Cloud Run, Eventarc, Pub/Sub, Cloud Build, Artifact Registry, Cloud Scheduler, Secret Manager, Vertex AI, Firebase Installations, FCM, App Check, Maps SDK.
+`.firebaserc` define el alias `default = demo-ecoreporte` para los emuladores (el prefijo `demo-` impide que toquen la nube) y `dev = ecoreporte-dev`.
 
-## Identidades y permisos (mínimo privilegio)
+**Por qué la app usa `ecoreporte-dev` aunque los datos estén en los emuladores:** el SDK nativo necesita un `google-services.json` real para arrancar. Con ese archivo, Crashlytics, Analytics, FCM y Remote Config funcionan contra la nube (gratis), y Auth, Firestore, Storage y Functions se redirigen a los emuladores con `EXPO_PUBLIC_USE_EMULATORS=true`.
 
-| Cuenta de servicio            | Para                                    | Roles                                                                                                                                                                                                           |
-| ----------------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `fn-runtime@`                 | Ejecutar las funciones                  | `roles/datastore.user`, `roles/storage.objectAdmin` (solo en el bucket), `roles/aiplatform.user`, `roles/firebasecloudmessaging.admin`, `roles/eventarc.eventReceiver`, `roles/logging.logWriter`               |
-| `ci-deployer@`                | Despliegue desde GitHub Actions con WIF | Desplegar funciones, reglas e índices, y `roles/iam.serviceAccountUser` sobre `fn-runtime@`. **[POR CONFIRMAR]** la lista exacta en el primer despliegue: se parte de la documentación de Firebase y se recorta |
-| Agente de servicio de Storage | Publicar los eventos del bucket         | `roles/pubsub.publisher` (lo suele configurar el CLI de Firebase)                                                                                                                                               |
+## Qué permite cada plan
 
-**Workload Identity Federation:** un pool `github`, un proveedor OIDC `token.actions.githubusercontent.com` y una condición `attribute.repository == "JulianCVM/ecoreporte"`. **No se crean llaves JSON.**
+| Servicio                                   | Spark (hoy)                                                                                            | Emulador                                      | Blaze (prod proyectada)    |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------ | --------------------------------------------- | -------------------------- |
+| Authentication (correo, Google)            | ✅                                                                                                     | ✅                                            | ✅                         |
+| Firestore                                  | ✅ con cuota diaria                                                                                    | ✅                                            | ✅                         |
+| Cloud Storage for Firebase                 | ❌ desde 2024 exige Blaze                                                                              | ✅                                            | ✅                         |
+| Cloud Functions                            | ❌ exige Blaze                                                                                         | ✅                                            | ✅                         |
+| Vertex AI                                  | ❌ exige facturación                                                                                   | —                                             | ✅                         |
+| Gemini Developer API (AI Studio)           | ✅ capa gratuita con clave, sin tarjeta                                                                | Se llama desde el emulador de Functions       | Se reemplaza por Vertex AI |
+| FCM, Crashlytics, Analytics, Remote Config | ✅ gratis                                                                                              | FCM no se emula                               | ✅                         |
+| App Check                                  | ✅ (proveedor de depuración en desarrollo)                                                             | —                                             | ✅ Play Integrity          |
+| Mapas                                      | MapLibre + teselas de OpenFreeMap, sin clave ([ADR 0008](adr/0008-mapa-con-maplibre-y-openfreemap.md)) | —                                             | Igual                      |
+| Copias de seguridad de Firestore           | ❌                                                                                                     | Exportación del emulador (`--export-on-exit`) | ✅ programadas             |
 
-**Roles de usuario:** custom claims `role: operator | admin`, asignados con `functions/scripts/set-role.ts` (Admin SDK y credenciales de la persona administradora, ejecutado en local). Nunca desde la app.
+**[POR CONFIRMAR]** al usar cada servicio: los límites de la capa gratuita de la Gemini Developer API (solicitudes por minuto y por día) y si esa capa usa los datos para mejorar productos de Google. Mientras sea así, en desarrollo **solo se usan fotos de prueba sin personas**.
+
+## Recursos de `ecoreporte-dev` (Spark, creado el 2026-11-18)
+
+| Recurso                | Configuración                                                                    |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| App Android            | `com.juliancvm.ecoreporte.dev` → `google-services.json` (fuera de git)           |
+| Authentication         | Correo/contraseña y Google (necesita la huella SHA-1 del keystore de depuración) |
+| FCM                    | Temas `operators` y tokens por usuario                                           |
+| Crashlytics, Analytics | Habilitados                                                                      |
+| Remote Config          | Plantilla con las claves de `05-parametrizacion.md`                              |
+| App Check              | Proveedor de depuración                                                          |
+
+Auth y Firestore en la nube **no se usan** mientras se trabaje con emuladores. Así no hay datos de prueba dispersos ni consumo de cuota.
+
+## Emuladores (`firebase.json`)
+
+| Emulador  | Puerto | Notas                                                        |
+| --------- | ------ | ------------------------------------------------------------ |
+| Auth      | 9099   |                                                              |
+| Firestore | 8080   | Reglas de `firebase/firestore.rules`                         |
+| Storage   | 9199   | Reglas de `firebase/storage.rules`                           |
+| Functions | 5001   | Lee los secretos de `functions/.secret.local` (fuera de git) |
+| Interfaz  | 4000   | Para ver datos, logs y disparar funciones                    |
+
+- Datos persistentes entre sesiones: `firebase emulators:start --import=.emulator-data --export-on-exit` (carpeta fuera de git).
+- Desde el emulador de Android se llega al PC por `10.0.2.2`. Desde un celular físico, por la IP del PC en la red local (`EXPO_PUBLIC_EMULATOR_HOST`), con los emuladores escuchando en `0.0.0.0`.
+- Los emuladores necesitan Java 21 o superior y `firebase-tools` (`npm i -D firebase-tools` en el repo, para fijar la versión).
 
 ## Secretos y archivos sensibles
 
-| Qué                                                              | Dónde                                                                                 | En git |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------ |
-| `google-services.json` / `GoogleService-Info.plist` (dev y prod) | Variables de EAS de tipo archivo: `GOOGLE_SERVICES_JSON`, `GOOGLE_SERVICE_INFO_PLIST` | No     |
-| Clave de Maps                                                    | Variable de EAS `GOOGLE_MAPS_API_KEY` (la lee `app.config.ts`)                        | No     |
-| Token de depuración de App Check                                 | `.env` local                                                                          | No     |
-| Credenciales de GCP de la CI                                     | No existen (WIF)                                                                      | —      |
-| Keystore de Android                                              | Lo administra EAS                                                                     | No     |
+| Qué                                          | Dónde                                                                                                                                                                                                                                         | En git |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `google-services.json` de `ecoreporte-dev`   | Raíz del repo (local)                                                                                                                                                                                                                         | No     |
+| `GEMINI_API_KEY` (capa gratuita)             | `functions/.secret.local`                                                                                                                                                                                                                     | No     |
+| Token de depuración de App Check             | `.env`                                                                                                                                                                                                                                        | No     |
+| Credencial para enviar FCM desde el emulador | Opcional. Una llave de cuenta de servicio **solo local**, fuera del repo, con `roles/firebasecloudmessaging.admin` y nada más. Se revoca al terminar la app. Sin ella, `FCM_ENABLED=false` y las push se prueban desde la consola de Firebase | No     |
+| Keystore de Android                          | El de depuración para desarrollo; el de publicación lo administraría EAS en producción                                                                                                                                                        | No     |
 
-## CI/CD
+## CI/CD (gratis: el repositorio es público)
 
 ```mermaid
 flowchart LR
-  PR[push / PR] --> A[app: tsc · lint · jest]
+  PR[push / PR] --> A[app: tsc · lint · formato · jest]
+  PR --> M[commits: commitlint con gitmoji]
   PR --> B[functions: tsc · lint · jest]
   PR --> C[reglas: emuladores + rules-unit-testing]
-  TAG[etiqueta v*] --> D[EAS Build preview → APK en GitHub Releases]
-  TAG --> E[firebase deploy --only functions,firestore,storage -P prod · WIF]
+  TAG[etiqueta v*] -.proyectado.-> D[EAS Build preview → APK en Releases]
+  TAG -.proyectado.-> E[firebase deploy -P prod · WIF]
 ```
 
-- `.github/workflows/ci.yml` corre A en cada push. B y C se agregan cuando existan `functions/` y las pruebas de reglas.
-- El despliegue a `dev` es manual (`firebase deploy -P dev`). El de `prod` solo sale de una etiqueta.
+- Hoy corren A y M. B y C se agregan cuando existan `functions/` y las pruebas de reglas.
+- **APK del portafolio:**
+  - Se genera en local con `npx expo run:android --variant release`, o con EAS Build dentro de la cuota gratuita mensual de Expo **[POR CONFIRMAR los límites vigentes]**.
+  - Se sube a GitHub Releases.
+  - Apunta a los emuladores: para el demo se graba el video en local.
 
-## Costos esperados (uso de demo)
+## Producción proyectada (no se activa sin presupuesto)
 
-| Servicio                                  | Supuesto                   | Costo esperado                                                                                  |
-| ----------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------- |
-| Firestore, Storage, Functions             | Cientos de reportes al mes | Dentro de la capa gratuita                                                                      |
-| Vertex AI (Gemini Flash)                  | ≤ 500 imágenes al mes      | Centavos de dólar. **[POR MEDIR]** con los tokens que registra `evaluations`                    |
-| Maps SDK móvil                            | Uso de demo                | Gratis en las SDK móviles. **[POR CONFIRMAR]** las condiciones vigentes de Google Maps Platform |
-| Artifact Registry (imágenes de Functions) | Pocas versiones            | Céntimos; política de limpieza de imágenes viejas                                               |
+| Recurso           | Configuración prevista                                                                                                                                                                                                                                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plan              | Blaze + presupuesto de USD 5/mes con alertas al 50/90/100 % **antes** de crear recursos                                                                                                                                                                                                                                               |
+| Firestore         | `us-east1` (no se puede cambiar, [ADR 0005](adr/0005-entornos-y-region.md)); copias diarias con retención de 7 días                                                                                                                                                                                                                   |
+| Storage           | Bucket por defecto en `us-east1`; _soft delete_ de 7 días                                                                                                                                                                                                                                                                             |
+| Functions 2.ª gen | `classifyReportPhoto`, `onReportStatusChange`, `purgeRejectedPhotos` en `us-east1`, `maxInstances` bajos                                                                                                                                                                                                                              |
+| IA                | `AI_PROVIDER=vertex`, cuenta `fn-runtime@` con `roles/aiplatform.user` (sin claves de API)                                                                                                                                                                                                                                            |
+| IAM               | `fn-runtime@`: `roles/datastore.user`, `roles/storage.objectAdmin` (en el bucket), `roles/aiplatform.user`, `roles/firebasecloudmessaging.admin`, `roles/eventarc.eventReceiver`, `roles/logging.logWriter`. `ci-deployer@` con Workload Identity Federation (sin llaves JSON); los roles exactos se recortan en el primer despliegue |
+| App Check         | Play Integrity (requiere distribuir por Google Play: cuenta de desarrollador de pago único, **costo aparte**)                                                                                                                                                                                                                         |
 
-**Topes en el código:** `maxInstances` de `classifyReportPhoto` = `AI_MAX_INSTANCES` (3), `REPORTS_PER_USER_PER_DAY` (10) e interruptor `AI_ENABLED`.
+### Costos proyectados (uso de demo: ≤ 500 reportes/mes)
+
+| Servicio                                  | Supuesto                                                                               | Costo estimado                                                          |
+| ----------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Firestore, Storage, Functions             | Cientos de documentos, < 1 GB de fotos, miles de invocaciones                          | USD 0: dentro de las cuotas sin costo de Blaze                          |
+| Vertex AI (Gemini Flash)                  | 500 imágenes/mes                                                                       | Menos de USD 1. **[POR MEDIR]** con los tokens que guarda `evaluations` |
+| Artifact Registry (imágenes de Functions) | Pocas versiones con política de limpieza                                               | Menos de USD 0,10                                                       |
+| Cloud Scheduler                           | 1 tarea                                                                                | USD 0 (3 tareas gratis por cuenta)                                      |
+| **Total mensual esperado**                |                                                                                        | **USD 0–2**, con tope de presupuesto de USD 5                           |
+| Pagos únicos opcionales                   | Cuenta de Google Play (para Play Integrity y la tienda) y Apple Developer (iOS, anual) | Fuera del plan actual                                                   |
 
 ## Observabilidad
 
-- **Crashlytics:** errores de la app, con `reportId` como clave personalizada en el flujo de reporte.
-- **Analytics:** eventos en `05-parametrizacion.md`.
-- **Cloud Logging:** cada función registra JSON con `reportId`, `status`, `latencyMs` y `model`. Métrica basada en logs para `ai.latencyMs` (RNF01).
-- **Alerta:** tasa de error de `classifyReportPhoto` > 10 % en 1 h → correo.
+- **Crashlytics:** errores de la app, con `reportId` como clave personalizada en el flujo de reporte. Gratis desde hoy.
+- **Analytics:** los eventos de `05-parametrizacion.md`. Gratis desde hoy.
+- **Logs de las funciones:** JSON con `reportId`, `status`, `latencyMs` y `model`. En local se ven en la interfaz del emulador; en producción, en Cloud Logging.
 
-## Recuperación (RNF02)
+## Recuperación
 
-1. Restaurar la copia de seguridad diaria de Firestore en una base nueva (`gcloud firestore databases restore`) y apuntar a ella, o importar sobre la base existente.
-2. Storage: las fotos no se borran salvo por la purga de rechazados; se activa la _soft delete_ del bucket (7 días).
-3. Functions: se despliegan de nuevo desde la etiqueta.
-4. Meta: RTO ≤ 4 h. **[POR MEDIR]** con un simulacro antes de cerrar la app.
+- **Hoy:** los datos de desarrollo se exportan con `--export-on-exit` y se pueden borrar sin pérdida real.
+- **Producción proyectada (RNF02):**
+  - copia diaria de Firestore y restauración en una base nueva;
+  - _soft delete_ del bucket;
+  - redespliegue de Functions desde la etiqueta.
+  - Meta: RTO ≤ 4 h.
 
-## Puesta en marcha desde cero (runbook)
+## Puesta en marcha desde cero (local)
 
-1. Crear `ecoreporte-dev` en la consola de Firebase, pasarlo a Blaze y **crear primero el presupuesto con alertas**.
-2. Crear Firestore en `us-east1`, la Storage por defecto, Authentication (correo y Google) y registrar las apps Android (`.dev`) e iOS.
-3. Descargar `google-services.json` y subirlo a EAS: `npx eas-cli@latest env:create --name GOOGLE_SERVICES_JSON --type file --environment development`.
-4. Habilitar Vertex AI, crear `fn-runtime@` y darle sus roles.
-5. `npm i -g firebase-tools` → `firebase login` → `firebase use --add` (alias `dev`).
-6. `firebase deploy -P dev --only firestore:rules,firestore:indexes,storage`.
-7. `firebase deploy -P dev --only functions`.
-8. Configurar WIF y `ci-deployer@` (solo para `prod`).
-9. Repetir 1–7 con `ecoreporte-prod` cuando el MVP pase en dev.
+1. En `ecoreporte-dev` (plan Spark), registrar la app Android `com.juliancvm.ecoreporte.dev` con la SHA-1 de depuración y descargar `google-services.json` a la raíz del repo.
+2. Habilitar Authentication (correo y Google), Crashlytics y Remote Config.
+3. Crear una clave en Google AI Studio (sin tarjeta) y guardarla en `functions/.secret.local` como `GEMINI_API_KEY=...`.
+4. `npm install` → `cp .env.example .env`.
+5. `npx firebase emulators:start --import=.emulator-data --export-on-exit`.
+6. En otra terminal: `npm run android`.

@@ -1,6 +1,6 @@
 # ADR 0003 · Clasificación en el servidor con Gemini y salida estructurada
 
-- **Estado:** aceptada · 2026-11-18
+- **Estado:** aceptada · 2026-11-18 · **modificada por [ADR 0007](0007-costo-cero-con-spark-y-emuladores.md)**: el proveedor ahora es intercambiable (`AI_PROVIDER`); Vertex AI queda para la producción proyectada
 
 ## Contexto
 

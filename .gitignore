@@ -50,6 +50,9 @@ GoogleService-Info*.plist
 service-account*.json
 
 # Firebase
+functions/.secret.local
+functions/.env.local
+.emulator-data/
 .firebase/
 *-debug.log
 firebase-export-*/

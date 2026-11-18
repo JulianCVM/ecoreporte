@@ -13,7 +13,7 @@ Esta app es la implementación móvil del documento de ingeniería **EcoReport A
 | Actor                              | En el documento original                | En esta app                                                                                                                              |
 | ---------------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | **Ciudadano**                      | Operador externo                        | Usuario con sesión. Reporta y sigue sus reportes                                                                                         |
-| **IA**                             | Actor sistema que intercepta el reporte | Cloud Function + Gemini en Vertex AI. Clasifica cada foto subida                                                                         |
+| **IA**                             | Actor sistema que intercepta el reporte | Cloud Function + Gemini (Developer API en desarrollo, Vertex AI en producción, ADR 0007). Clasifica cada foto subida                     |
 | **Operador de la entidad de aseo** | Administrador SOC (dashboard web)       | Usuario con el claim `role: "operator"`. En el MVP trabaja **desde la misma app** (bandeja y cambio de estado). El panel web es un extra |
 | **Administrador**                  | —                                       | Claim `role: "admin"`. Asigna operadores con un script del Admin SDK. No tiene pantalla                                                  |
 
@@ -43,7 +43,7 @@ Esta app es la implementación móvil del documento de ingeniería **EcoReport A
 | RNF02  | Recuperación            | Firestore y Storage son administrados. Exportación programada de Firestore a un bucket (RPO 24 h). RTO ≤ 4 h (meta del documento) siguiendo el runbook de `04-infraestructura.md` | Una restauración de prueba documentada                 |
 | RNF03  | Seguridad en tránsito   | TLS en todo (los SDK de Firebase lo imponen). Reglas cerradas por defecto. App Check                                                                                              | Pruebas de reglas en CI                                |
 | RNF04  | Escalabilidad de la IA  | La clasificación corre en una función aparte con `maxInstances` propio, separada del resto                                                                                        | Configuración de la función                            |
-| RNF05  | Costo                   | ≤ USD 10/mes en prod con uso de demo; tope de reportes por usuario y día; interruptor `AI_ENABLED`                                                                                | Alerta de presupuesto                                  |
+| RNF05  | Costo                   | USD 0 en desarrollo (Spark + emuladores, ADR 0007); producción proyectada ≤ USD 5/mes; `AI_DAILY_LIMIT`, tope por usuario e interruptor `AI_ENABLED`                              | Alerta de presupuesto                                  |
 | RNF06  | Accesibilidad           | Etiquetas de accesibilidad en los controles; el estado nunca se comunica solo con color                                                                                           | Revisión con TalkBack                                  |
 
 ## Criterios de aceptación (del documento, adaptados)

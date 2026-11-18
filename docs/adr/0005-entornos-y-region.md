@@ -1,6 +1,6 @@
 # ADR 0005 · Entornos y región
 
-- **Estado:** aceptada · 2026-11-18 (la región queda **[POR CONFIRMAR]** al crear el primer proyecto)
+- **Estado:** aceptada · 2026-11-18 · **modificada por [ADR 0007](0007-costo-cero-con-spark-y-emuladores.md)**: el entorno de trabajo es `local` (emuladores), `ecoreporte-dev` queda en Spark y `prod` se proyecta. La región aplica cuando se cree la base de producción
 
 ## Decisión
 

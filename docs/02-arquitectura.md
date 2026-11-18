@@ -9,7 +9,7 @@ flowchart LR
   APP <-->|SDK nativo, offline| FS[(Cloud Firestore)]
   APP -->|subida de la foto| ST[(Cloud Storage<br/>for Firebase)]
   ST -->|evento: objeto finalizado| FN[Cloud Functions 2.ª gen]
-  FN -->|imagen + prompt| VX[Vertex AI · Gemini]
+  FN -->|imagen + prompt| VX[Gemini<br/>API gratuita en local · Vertex AI en prod]
   FN -->|veredicto, alerta| FS
   FN -->|push| FCM[Firebase Cloud Messaging]
   FCM --> APP
@@ -24,7 +24,7 @@ flowchart LR
 | **App** (`src/`)                | Capturar, guardar en cola local, escribir el reporte en estado `pending_upload`, subir la foto, escuchar cambios, cambiar estados si es operador | Escribir `ai`, `status` de la IA ni alertas. Decidir el veredicto. Tener secretos |
 | **Reglas** (`firebase/*.rules`) | Validar forma, dueño, transiciones permitidas y tamaño de la foto                                                                                | Llamar a la IA                                                                    |
 | **Functions** (`functions/`)    | Clasificar, escribir el veredicto y el log de la evaluación, crear alertas, enviar push, limpiar                                                 | Confiar en lo que mandó el cliente sin revalidarlo                                |
-| **Vertex AI**                   | Devolver categoría, complejidad, confianza y descripción en JSON con esquema                                                                     | Persistir nada                                                                    |
+| **Gemini** (`AI_PROVIDER`)      | Devolver categoría, complejidad, confianza y descripción en JSON con esquema                                                                     | Persistir nada                                                                    |
 
 ## Flujo de un reporte
 
@@ -37,7 +37,7 @@ sequenceDiagram
   participant F as Firestore
   participant S as Storage
   participant FN as Function classifyReportPhoto
-  participant G as Gemini (Vertex AI)
+  participant G as Gemini (AI_PROVIDER)
   U->>A: Toma la foto y confirma
   A->>A: Comprime (≤ PHOTO_MAX_EDGE_PX, JPEG PHOTO_JPEG_QUALITY)
   A->>F: set reports/{id} status=pending_upload (funciona sin red)
@@ -122,6 +122,8 @@ ecoreporte/
 | [0004](adr/0004-reporte-en-cuarentena-hasta-el-veredicto.md)  | El reporte se escribe primero y queda en cuarentena hasta el veredicto       |
 | [0005](adr/0005-entornos-y-region.md)                         | Entornos (local, dev, prod) y región `us-east1`                              |
 | [0006](adr/0006-alertas-con-fcm-y-listeners.md)               | Alertas con FCM y listeners en lugar de WebSocket                            |
+| [0007](adr/0007-costo-cero-con-spark-y-emuladores.md)         | Costo cero: Spark, emuladores, IA intercambiable y producción proyectada     |
+| [0008](adr/0008-mapa-con-maplibre-y-openfreemap.md)           | Mapa con MapLibre y teselas de OpenFreeMap                                   |
 
 ## Riesgos abiertos
 
