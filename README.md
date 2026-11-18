@@ -1,56 +1,56 @@
-# Welcome to your Expo app 👋
+# EcoReporte
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App móvil de reporte ciudadano de residuos: foto + ubicación GPS, clasificación con IA (Gemini en Vertex AI), funcionamiento sin conexión y alertas para la entidad de aseo.
 
-## Get started
+> **Estado:** en construcción (bloque 0 de 4). Plan y avance en [`docs/README.md`](docs/README.md).
 
-1. Install dependencies
+## Qué demuestra
 
-   ```bash
-   npm install
-   ```
+| Área         | Cómo                                                                                                                                                        |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React Native | Expo SDK 58, Expo Router, TypeScript estricto, development build con módulos nativos                                                                        |
+| Firebase     | Auth con roles por custom claims, Firestore offline y en tiempo real, Storage, reglas probadas, Cloud Functions, FCM, App Check, Crashlytics, Remote Config |
+| Google Cloud | Vertex AI (Gemini con salida estructurada), Cloud Scheduler, IAM de mínimo privilegio, Workload Identity Federation, presupuesto y alertas                  |
+| Ingeniería   | ADR, parametrización documentada, pruebas, CI en GitHub Actions, EAS Build                                                                                  |
 
-2. Start the app
+## Arquitectura en una imagen
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```mermaid
+flowchart LR
+  APP[App Expo] <--> FS[(Firestore)]
+  APP --> ST[(Storage)]
+  ST --> FN[Cloud Function]
+  FN --> VX[Vertex AI · Gemini]
+  FN --> FS
+  FN --> FCM[FCM] --> APP
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Detalle en [`docs/02-arquitectura.md`](docs/02-arquitectura.md).
 
-### Other setup steps
+## Ejecutar en local
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Requisitos: Node 24, Android Studio con un emulador, y JDK 17 o 21 (en Windows se puede usar el que trae Android Studio).
 
-## Learn more
+```bash
+npm install
+cp .env.example .env
+npm run verify          # typecheck + lint + formato + pruebas
+npm run android         # compila el development build y lo instala en el emulador
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+En Windows, antes del primer `npm run android` (PowerShell):
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+```
 
-## Join the community
+La configuración de Firebase (`google-services.json`) no está en el repositorio: ver [`docs/04-infraestructura.md`](docs/04-infraestructura.md).
 
-Join our community of developers creating universal apps.
+## Origen
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Implementación del documento de ingeniería **EcoReport AI** (UTS, 2025). Las diferencias con ese diseño están en [`docs/adr/0002`](docs/adr/0002-firebase-gcp-en-lugar-de-la-pila-original.md).
+
+## Licencia
+
+MIT

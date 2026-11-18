@@ -1,0 +1,79 @@
+# 05 · Parametrización
+
+Cada valor que cambia el comportamiento está aquí con su valor por defecto, su rango y el lugar donde vive. **Un valor que no está en esta tabla no debería existir en el código como número suelto.**
+
+## Build (app.config.ts)
+
+| Parámetro                   | Valores                                  | Por defecto                                    | Efecto                                                           |
+| --------------------------- | ---------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
+| `APP_VARIANT`               | `development` · `preview` · `production` | `development`                                  | Nombre («EcoReporte Dev»), paquete (`.dev`), archivo de Firebase |
+| `GOOGLE_SERVICES_JSON`      | Ruta a un archivo (variable de EAS)      | `./google-services.json` (local, fuera de git) | Configuración de Firebase en Android                             |
+| `GOOGLE_SERVICE_INFO_PLIST` | Ruta a un archivo                        | `./GoogleService-Info.plist`                   | Configuración de Firebase en iOS                                 |
+| `GOOGLE_MAPS_API_KEY`       | Texto                                    | vacío                                          | Mapa en Android                                                  |
+
+## Cliente (`EXPO_PUBLIC_*`, validadas con zod en `src/lib/config/env.ts`)
+
+| Variable                            | Tipo                     | Por defecto                      | Rango     | Efecto                                                         |
+| ----------------------------------- | ------------------------ | -------------------------------- | --------- | -------------------------------------------------------------- |
+| `EXPO_PUBLIC_ENV`                   | `local` · `dev` · `prod` | `local`                          | —         | Etiqueta del entorno en la pantalla de perfil y en Crashlytics |
+| `EXPO_PUBLIC_USE_EMULATORS`         | booleano                 | `true` en local                  | —         | Conecta Auth, Firestore, Storage y Functions al emulador       |
+| `EXPO_PUBLIC_EMULATOR_HOST`         | host                     | `10.0.2.2` (emulador de Android) | IP o host | IP del PC si se prueba en un celular físico                    |
+| `EXPO_PUBLIC_APP_CHECK_DEBUG_TOKEN` | texto                    | vacío                            | —         | Solo en dev                                                    |
+
+## Constantes del dominio en el cliente (`src/features/reports/domain/limits.ts`)
+
+| Constante                  | Por defecto      | Rango    | Por qué                                                     |
+| -------------------------- | ---------------- | -------- | ----------------------------------------------------------- |
+| `PHOTO_MAX_EDGE_PX`        | 1600             | 800–2400 | Detalle suficiente para la IA sin pasar de 2 MB             |
+| `PHOTO_JPEG_QUALITY`       | 0.7              | 0.5–0.9  | Tamaño frente a calidad                                     |
+| `PHOTO_MAX_BYTES`          | 2 097 152 (2 MB) | —        | Igual al límite de `storage.rules`                          |
+| `LOCATION_MAX_ACCURACY_M`  | 50               | 10–100   | Por encima, la app no deja enviar                           |
+| `LOCATION_GOOD_ACCURACY_M` | 10               | —        | Meta del documento original; la app la muestra como «buena» |
+| `NOTE_MAX_CHARS`           | 280              | —        | Igual a las reglas                                          |
+| `UPLOAD_MAX_ATTEMPTS`      | 8                | 3–20     | Reintentos de la cola antes de pedir ayuda al usuario       |
+| `UPLOAD_BACKOFF_BASE_MS`   | 2 000            | —        | Espera exponencial: 2 s, 4 s, 8 s… hasta 5 min              |
+
+## Remote Config (cambia sin publicar la app; el valor por defecto va en el código)
+
+| Clave                       | Por defecto | Efecto                                                  |
+| --------------------------- | ----------- | ------------------------------------------------------- |
+| `map_radius_km`             | 2           | Radio de la consulta por cercanía                       |
+| `map_resolved_visible_days` | 7           | Días que un reporte resuelto sigue en el mapa           |
+| `report_enabled`            | `true`      | Interruptor para pausar nuevos reportes (mantenimiento) |
+| `banner_message`            | vacío       | Aviso en la pantalla de inicio                          |
+
+## Servidor (`params` de Cloud Functions, `functions/src/config.ts`)
+
+| Parámetro                       | Tipo     | Por defecto                                              | Rango                      | Efecto                                                 |
+| ------------------------------- | -------- | -------------------------------------------------------- | -------------------------- | ------------------------------------------------------ |
+| `AI_ENABLED`                    | booleano | `true`                                                   | —                          | `false` → todo va a `needs_review`, sin llamar a la IA |
+| `GEMINI_MODEL`                  | texto    | el Gemini Flash vigente al desplegar **[POR CONFIRMAR]** | —                          | Modelo de clasificación                                |
+| `VERTEX_LOCATION`               | texto    | `us-east1`                                               | regiones de Vertex         | Dónde se llama al modelo                               |
+| `AI_APPROVE_THRESHOLD`          | float    | 0.80                                                     | 0.5–0.99                   | Confianza mínima para `approved`                       |
+| `AI_REVIEW_THRESHOLD`           | float    | 0.50                                                     | 0.1–`AI_APPROVE_THRESHOLD` | Por debajo → `rejected`                                |
+| `AI_TIMEOUT_MS`                 | int      | 15 000                                                   | 5 000–60 000               | Tiempo máximo de la llamada                            |
+| `AI_MAX_ATTEMPTS`               | int      | 2                                                        | 1–3                        | Reintentos por error técnico                           |
+| `AI_MAX_INSTANCES`              | int      | 3                                                        | 1–10                       | Tope de concurrencia (costo)                           |
+| `PROMPT_VERSION`                | texto    | `v1`                                                     | —                          | Se guarda en cada evaluación para comparar versiones   |
+| `REPORTS_PER_USER_PER_DAY`      | int      | 10                                                       | 1–100                      | Más que eso → `needs_review` y aviso                   |
+| `PHOTO_RETENTION_REJECTED_DAYS` | int      | 30                                                       | 1–365                      | Purga de fotos rechazadas o canceladas                 |
+| `ALERT_COMPLEXITY`              | texto    | `alta`                                                   | `media` · `alta`           | Desde qué complejidad se crea una alerta               |
+
+Regla de veredicto (función pura `decideVerdict`, con pruebas):
+
+1. Si `category == sin_residuo` → `rejected`.
+2. Si `confidence ≥ AI_APPROVE_THRESHOLD` → `approved`.
+3. Si `confidence ≥ AI_REVIEW_THRESHOLD` → `needs_review`.
+4. Si no → `rejected`.
+5. Si la IA falla después de `AI_MAX_ATTEMPTS` → `needs_review`.
+
+## Eventos de Analytics
+
+| Evento                  | Parámetros                                         |
+| ----------------------- | -------------------------------------------------- |
+| `report_started`        | —                                                  |
+| `report_created`        | `offline` (bool), `accuracy_m`                     |
+| `report_uploaded`       | `attempts`, `bytes`, `delay_s` (desde la creación) |
+| `report_verdict_seen`   | `status`                                           |
+| `report_status_changed` | `from`, `to` (lo dispara el operador)              |
+| `map_opened`            | `radius_km`                                        |

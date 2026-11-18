@@ -1,0 +1,124 @@
+rules_version = '2';
+
+// BORRADOR 2026-11-18: sin pruebas todavía. No se despliega hasta tener las pruebas
+// con @firebase/rules-unit-testing (docs/03-modelo-de-datos.md · Reglas de acceso).
+// Las transiciones repiten src/features/reports/domain/report-status.ts.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOperator() {
+      return signedIn() && request.auth.token.get('role', '') in ['operator', 'admin'];
+    }
+
+    function isPublicStatus(status) {
+      return status in ['approved', 'in_progress', 'resolved'];
+    }
+
+    function validNote(data) {
+      return !('note' in data) || (data.note is string && data.note.size() <= 280);
+    }
+
+    function validPhoto(photo, reportId) {
+      return photo is map
+        && photo.keys().hasOnly(['path', 'width', 'height', 'bytes'])
+        && photo.path == 'reports/' + request.auth.uid + '/' + reportId + '.jpg'
+        && photo.bytes is int && photo.bytes > 0 && photo.bytes <= 2097152
+        && photo.width is int && photo.height is int;
+    }
+
+    match /reports/{reportId} {
+      allow read: if signedIn()
+        && (resource.data.authorUid == request.auth.uid
+          || isPublicStatus(resource.data.status)
+          || isOperator());
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'authorUid', 'status', 'createdAt', 'capturedAt', 'location',
+          'locationAccuracyM', 'geohash', 'note', 'photo', 'updatedAt'])
+        && request.resource.data.keys().hasAll([
+          'authorUid', 'status', 'createdAt', 'capturedAt', 'location',
+          'locationAccuracyM', 'geohash', 'photo', 'updatedAt'])
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.status == 'pending_upload'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.capturedAt is timestamp
+        && request.resource.data.location is latlng
+        && request.resource.data.locationAccuracyM is number
+        && request.resource.data.locationAccuracyM >= 0
+        && request.resource.data.locationAccuracyM <= 50
+        && request.resource.data.geohash is string
+        && request.resource.data.geohash.size() == 9
+        && validNote(request.resource.data)
+        && validPhoto(request.resource.data.photo, reportId);
+
+      // El autor: solo la nota, o cancelar, mientras la foto no se ha subido.
+      function authorUpdate() {
+        return resource.data.authorUid == request.auth.uid
+          && resource.data.status == 'pending_upload'
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['note', 'status', 'updatedAt'])
+          && request.resource.data.status in ['pending_upload', 'cancelled']
+          && request.resource.data.updatedAt == request.time
+          && validNote(request.resource.data);
+      }
+
+      // El operador: solo sus transiciones, con rastro.
+      function operatorUpdate() {
+        let from = resource.data.status;
+        let to = request.resource.data.status;
+        return isOperator()
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'statusHistory', 'updatedAt'])
+          && ((from == 'needs_review' && to in ['approved', 'rejected'])
+            || (from == 'approved' && to == 'in_progress')
+            || (from == 'in_progress' && to == 'resolved'))
+          && request.resource.data.statusHistory is list
+          && request.resource.data.statusHistory.size() <= 20
+          && request.resource.data.updatedAt == request.time;
+      }
+
+      allow update: if signedIn() && (authorUpdate() || operatorUpdate());
+      allow delete: if false;
+
+      // Bitácora de la IA: solo la escribe la Function (Admin SDK).
+      match /evaluations/{evaluationId} {
+        allow read: if isOperator();
+        allow write: if false;
+      }
+    }
+
+    match /alerts/{alertId} {
+      allow read: if isOperator();
+      allow update: if isOperator()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'acknowledgedBy', 'acknowledgedAt'])
+        && ((resource.data.status == 'open' && request.resource.data.status == 'acknowledged')
+          || (resource.data.status == 'acknowledged' && request.resource.data.status == 'closed'))
+        && request.resource.data.acknowledgedBy == request.auth.uid;
+      allow create, delete: if false;
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['displayName', 'createdAt', 'reportsToday', 'fcmTokens'])
+        && (resource == null
+          ? !('reportsToday' in request.resource.data)
+          : request.resource.data.get('reportsToday', null) == resource.data.get('reportsToday', null))
+        && (!('fcmTokens' in request.resource.data)
+          || (request.resource.data.fcmTokens is list && request.resource.data.fcmTokens.size() <= 5));
+      allow delete: if false;
+    }
+
+    // Todo lo demás, cerrado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

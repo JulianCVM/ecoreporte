@@ -36,8 +36,21 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-example
 
 # generated native folders
 /ios
 /android
+
+# EcoReporte: configuración y secretos fuera de git (docs/04-infraestructura.md)
+.env
+.env.*
+!.env.example
+google-services*.json
+GoogleService-Info*.plist
+service-account*.json
+
+# Firebase
+.firebase/
+*-debug.log
+firebase-export-*/
+coverage/

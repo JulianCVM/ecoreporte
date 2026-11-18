@@ -39,3 +39,12 @@ Docs: https://docs.expo.dev/eas/index.md
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+
+## EcoReporte: reglas del proyecto
+
+- Lee `docs/README.md` antes de cambiar algo. Las decisiones están en `docs/adr/`; una decisión nueva o un cambio de una existente necesita un ADR nuevo.
+- **Parámetros:** ningún número suelto con significado de negocio. Todo valor configurable está en `docs/05-parametrizacion.md` y en `src/features/reports/domain/limits.ts` o `functions/src/config.ts`.
+- **Fronteras:** las pantallas (`src/app/`) no importan Firebase; usan `src/features/*/data`. `src/features/*/domain` no importa React ni Firebase.
+- **Estados del reporte:** si cambias `report-status.ts`, cambia `firebase/firestore.rules` y sus pruebas en el mismo PR.
+- **Secretos:** nunca se versionan `.env`, `google-services*.json`, `GoogleService-Info*.plist` ni llaves de cuentas de servicio.
+- Antes de dar algo por terminado: `npm run verify` en verde.

@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// BORRADOR 2026-11-18: sin pruebas todavía (ver firestore.rules).
+// Límites iguales a src/features/reports/domain/limits.ts.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isOperator() {
+      return request.auth != null && request.auth.token.get('role', '') in ['operator', 'admin'];
+    }
+
+    // Foto original: la sube el autor una sola vez; la Function la lee con el Admin SDK.
+    match /reports/{uid}/{fileName} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isOperator());
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && fileName.matches('^[A-Za-z0-9]{20}[.]jpg$')
+        && request.resource.size <= 2 * 1024 * 1024
+        && request.resource.contentType == 'image/jpeg';
+      allow update, delete: if false;
+    }
+
+    // Miniaturas (extra RF10): solo las escribe la Function.
+    match /thumbs/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,21 @@
+import Constants from 'expo-constants';
+
+import { ScreenScaffold } from '@/components/screen-scaffold';
+import { ThemedText } from '@/components/themed-text';
+import { appEnv } from '@/lib/config/env';
+
+export default function PerfilScreen() {
+  const variant = String(Constants.expoConfig?.extra?.appVariant ?? 'development');
+  const version = Constants.expoConfig?.version ?? '0.0.0';
+
+  return (
+    <ScreenScaffold
+      title="Perfil"
+      pending={['Inicio de sesión con correo y Google', 'Bandeja del operador (RF07)']}>
+      <ThemedText type="small" themeColor="textSecondary">
+        Versión {version} · variante {variant} · entorno {appEnv.env}
+        {appEnv.useEmulators ? ' · emuladores' : ''}
+      </ThemedText>
+    </ScreenScaffold>
+  );
+}
