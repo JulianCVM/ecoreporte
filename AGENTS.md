@@ -166,8 +166,8 @@ desactives reglas de lint (`eslint-disable`) para esconder un problema.
 La memoria del proyecto vive en la bóveda `C:\Users\USUARIO\Desktop\Obsidian\CURSOS\PROYECTOS\AppsMoviles\`
 (empieza por `00 Inicio.md`). Al cerrar una tarea que cambie código, documentación o decisiones:
 
-1. **Sincroniza el espejo de `docs/`:** `node ../herramientas/sincronizar-obsidian.mjs`, desde
-   la carpeta `AppsMoviles`. Copia `docs/` a la bóveda con sus propiedades. En la bóveda, el
+1. **Sincroniza el espejo de `docs/`:** `node ../herramientas/sincronizar-obsidian.mjs` desde
+   este repositorio (el script vive en la carpeta `AppsMoviles`, fuera de git). Copia `docs/` a la bóveda con sus propiedades. En la bóveda, el
    espejo **no se edita**: se cambia aquí y se vuelve a sincronizar.
 2. **Agrega una entrada a `05 Registro/Bitácora.md`:** la fecha, qué cambió, el commit y la
    etiqueta de certeza.
