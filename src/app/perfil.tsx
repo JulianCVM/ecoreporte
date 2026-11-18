@@ -4,7 +4,7 @@ import { ScreenScaffold } from '@/components/screen-scaffold';
 import { ThemedText } from '@/components/themed-text';
 import { appEnv } from '@/lib/config/env';
 
-export default function PerfilScreen() {
+export default function ProfileScreen() {
   const variant = String(Constants.expoConfig?.extra?.appVariant ?? 'development');
   const version = Constants.expoConfig?.version ?? '0.0.0';
 

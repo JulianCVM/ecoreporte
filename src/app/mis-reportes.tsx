@@ -1,6 +1,6 @@
 import { ScreenScaffold } from '@/components/screen-scaffold';
 
-export default function MisReportesScreen() {
+export default function MyReportsScreen() {
   return (
     <ScreenScaffold
       title="Mis reportes"

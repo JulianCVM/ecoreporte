@@ -1,6 +1,6 @@
 import { ScreenScaffold } from '@/components/screen-scaffold';
 
-export default function ReportarScreen() {
+export default function ReportScreen() {
   return (
     <ScreenScaffold
       title="Reportar residuos"

@@ -1,6 +1,6 @@
 import { ScreenScaffold } from '@/components/screen-scaffold';
 
-export default function MapaScreen() {
+export default function MapScreen() {
   return (
     <ScreenScaffold
       title="Mapa"
