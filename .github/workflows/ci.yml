@@ -13,6 +13,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  commits:
+    name: Commits · Conventional Commits con gitmoji
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Revisa los commits del PR
+        if: github.event_name == 'pull_request'
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+      - name: Revisa el último commit
+        if: github.event_name == 'push'
+        run: npx commitlint --last --verbose
+
   app:
     name: App · typecheck, lint, formato y pruebas
     runs-on: ubuntu-latest
