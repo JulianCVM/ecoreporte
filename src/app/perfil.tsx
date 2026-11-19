@@ -3,6 +3,7 @@ import Constants from 'expo-constants';
 import { ScreenScaffold } from '@/components/screen-scaffold';
 import { ThemedText } from '@/components/themed-text';
 import { appEnv } from '@/lib/config/env';
+import { firebaseProjectId } from '@/lib/firebase';
 
 export default function ProfileScreen() {
   const variant = String(Constants.expoConfig?.extra?.appVariant ?? 'development');
@@ -15,6 +16,9 @@ export default function ProfileScreen() {
       <ThemedText type="small" themeColor="textSecondary">
         Versión {version} · variante {variant} · entorno {appEnv.env}
         {appEnv.useEmulators ? ' · emuladores' : ''}
+      </ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Firebase: {firebaseProjectId()}
       </ThemedText>
     </ScreenScaffold>
   );
