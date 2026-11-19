@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 /**
@@ -17,6 +20,32 @@ const appName = isProd
     ? 'EcoReporte Preview'
     : 'EcoReporte Dev';
 
+/**
+ * Ruta del archivo de configuración de Firebase para Android (ADR 0001).
+ *
+ * - `development` y `preview` usan `ecoreporte-dev` (paquete `.dev`): `./google-services.json`.
+ * - `production` usaría `ecoreporte-prod`, que está proyectado y no existe (ADR 0007):
+ *   `./google-services.prod.json`.
+ * - `GOOGLE_SERVICES_JSON` lo reemplaza (por ejemplo, en un build de CI).
+ *
+ * El archivo está fuera de git. Si falta, se devuelve `undefined` y el plugin de React
+ * Native Firebase avisa al hacer prebuild. Así, lint, pruebas y CI no lo necesitan.
+ */
+export function resolveGoogleServicesFile(
+  appVariant: Variant,
+  env: Record<string, string | undefined>,
+  fileExists: (file: string) => boolean,
+): string | undefined {
+  const file =
+    env.GOOGLE_SERVICES_JSON ||
+    (appVariant === 'production' ? './google-services.prod.json' : './google-services.json');
+  return fileExists(file) ? file : undefined;
+}
+
+const googleServicesFile = resolveGoogleServicesFile(variant, process.env, (file) =>
+  existsSync(path.resolve(__dirname, file)),
+);
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: appName,
@@ -29,8 +58,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     icon: './assets/expo.icon',
     bundleIdentifier: appId,
-    // Se activa cuando exista el archivo de Firebase (ADR 0001):
-    // googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST ?? './GoogleService-Info.plist',
+    // iOS no se compila en esta etapa (no hay Mac). Cuando se haga, va GoogleService-Info.plist.
   },
   android: {
     package: appId,
@@ -41,7 +69,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
     predictiveBackGestureEnabled: false,
-    // googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
+    googleServicesFile,
   },
   web: {
     output: 'server',
@@ -49,6 +77,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     'expo-router',
+    '@react-native-firebase/app',
+    '@react-native-firebase/auth',
+    // React Native Firebase en iOS exige frameworks estáticos.
+    ['expo-build-properties', { ios: { useFrameworks: 'static' } }],
     [
       'expo-splash-screen',
       {
