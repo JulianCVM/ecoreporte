@@ -22,6 +22,13 @@ No hay presupuesto, así que **nada de lo que hoy corre puede pedir tarjeta**.
 
 **Por qué la app usa `ecoreporte-dev` aunque los datos estén en los emuladores:** el SDK nativo necesita un `google-services.json` real para arrancar. Con ese archivo, Crashlytics, Analytics, FCM y Remote Config funcionan contra la nube (gratis), y Auth, Firestore, Storage y Functions se redirigen a los emuladores con `EXPO_PUBLIC_USE_EMULATORS=true`.
 
+**Por qué los emuladores corren con `--project dev`:**
+
+- El cliente se identifica con el `project_id` de su `google-services.json` (`ecoreporte-dev`).
+- Con `singleProjectMode`, los emuladores rechazan un proyecto distinto del suyo.
+- Las pruebas de reglas, en cambio, usan el proyecto `demo-ecoreporte` (el `default` de `.firebaserc`), que nunca toca la nube.
+- La conexión vive en `src/lib/firebase/`; `emulatorTargets()` decide host y puertos, y nunca conecta en `prod`.
+
 ## Qué permite cada plan
 
 | Servicio                                   | Spark (hoy)                                                                                            | Emulador                                      | Blaze (prod proyectada)    |
@@ -138,5 +145,5 @@ flowchart LR
 2. Habilitar Authentication (correo y Google), Crashlytics y Remote Config.
 3. Crear una clave en Google AI Studio (sin tarjeta) y guardarla en `functions/.secret.local` como `GEMINI_API_KEY=...`.
 4. `npm install` → `cp .env.example .env`.
-5. `npx firebase emulators:start --import=.emulator-data --export-on-exit`.
+5. `npm run emulators`. Carga los datos de `.emulator-data/` y los guarda al salir con Ctrl+C. Para empezar sin datos: `npm run emulators:limpio`. Requiere Java 21 o superior; sirve el JBR de Android Studio en `JAVA_HOME`. La interfaz queda en <http://localhost:4000>.
 6. En otra terminal: `npm run android`.

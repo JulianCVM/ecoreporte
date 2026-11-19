@@ -2,23 +2,53 @@
  * Único punto de la app que importa React Native Firebase (AGENTS.md · capas).
  *
  * Usa la API modular del SDK nativo (ADR 0001). Las features obtienen las instancias de aquí
- * y nunca importan `@react-native-firebase/*` directamente. La conexión a los emuladores
- * se agrega en #3.
+ * y nunca importan `@react-native-firebase/*` directamente. La primera vez que se pide una
+ * instancia se conecta a la Emulator Suite si la configuración lo indica: Firestore exige que
+ * eso pase antes de cualquier lectura o escritura.
  */
 import { getApp } from '@react-native-firebase/app';
-import { getAuth } from '@react-native-firebase/auth';
-import { getFirestore } from '@react-native-firebase/firestore';
-import { getFunctions } from '@react-native-firebase/functions';
-import { getStorage } from '@react-native-firebase/storage';
+import { connectAuthEmulator, getAuth } from '@react-native-firebase/auth';
+import { connectFirestoreEmulator, getFirestore } from '@react-native-firebase/firestore';
+import { connectFunctionsEmulator, getFunctions } from '@react-native-firebase/functions';
+import { connectStorageEmulator, getStorage } from '@react-native-firebase/storage';
 
-/** Región de las Cloud Functions (ADR 0005; en local da igual, el emulador la respeta). */
+import { appEnv } from '@/lib/config/env';
+
+import { emulatorTargets } from './emulators';
+
+/** Región de las Cloud Functions (ADR 0005; el emulador la respeta). */
 export const FUNCTIONS_REGION = 'us-east1';
 
-export const firebaseApp = () => getApp();
-export const auth = () => getAuth(getApp());
-export const db = () => getFirestore(getApp());
-export const storage = () => getStorage(getApp());
-export const functions = () => getFunctions(getApp(), FUNCTIONS_REGION);
+let initialized = false;
+
+/** Conecta los servicios a los emuladores una sola vez. Es idempotente. */
+function ensureInitialized(): void {
+  if (initialized) return;
+  initialized = true;
+  const targets = emulatorTargets(appEnv);
+  if (!targets) return;
+  const app = getApp();
+  connectAuthEmulator(getAuth(app), targets.authUrl);
+  connectFirestoreEmulator(getFirestore(app), targets.host, targets.ports.firestore);
+  connectStorageEmulator(getStorage(app), targets.host, targets.ports.storage);
+  connectFunctionsEmulator(
+    getFunctions(app, FUNCTIONS_REGION),
+    targets.host,
+    targets.ports.functions,
+  );
+}
+
+export const firebaseApp = () => {
+  ensureInitialized();
+  return getApp();
+};
+export const auth = () => getAuth(firebaseApp());
+export const db = () => getFirestore(firebaseApp());
+export const storage = () => getStorage(firebaseApp());
+export const functions = () => getFunctions(firebaseApp(), FUNCTIONS_REGION);
 
 /** ID del proyecto de Firebase al que apunta el build (lo muestra la pantalla Perfil). */
 export const firebaseProjectId = (): string => getApp().options.projectId ?? 'desconocido';
+
+/** `true` si la app quedó conectada a la Emulator Suite. */
+export const usingEmulators = (): boolean => emulatorTargets(appEnv) !== null;
