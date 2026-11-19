@@ -238,8 +238,19 @@ la foto entra a una cola propia, porque Storage no encola subidas
 
 ## Ramas y pull requests
 
-- `main` es la rama estable. Se trabaja en `feature/<tema>`, `fix/<tema>` o `docs/<tema>`, y
-  se integra por PR con **squash merge**.
+- **Ramas:**
+  - `dev` es la rama de integración y la rama por defecto.
+  - `main` solo recibe releases.
+  - Las dos están protegidas: nadie hace push directo, todo entra por PR con la CI en verde.
+- **Trabajo diario:**
+  - Cada tarea es una issue del [Project](https://github.com/users/JulianCVM/projects/11).
+  - Se trabaja en `feature/<tema>`, `fix/<tema>`, `docs/<tema>` o `chore/<tema>`, creada desde `dev`.
+  - Se integra a `dev` por PR con **squash merge**. El asunto del squash es el título del PR, y la CI lo valida.
+- **Release:**
+  - PR de `dev` a `main` con **merge commit**, titulado `🔖 chore(app): publica vX.Y.Z`.
+  - Después, la etiqueta `vX.Y.Z` en `main` y la Release en GitHub.
+- **Estados del Project:** Backlog → Listo → En curso (rama abierta) → En revisión (PR abierto) → Hecho (PR fusionado en `dev`).
+- **Vínculo con la issue:** el PR la cierra con `Cierra #N`. Como `dev` es la rama por defecto, la issue se cierra al fusionar.
 - **Título del PR** con el formato del asunto de commit. **Descripción** en español con la
   plantilla `.github/pull_request_template.md`. **Sin** «Generated with…», emojis de
   herramientas, firmas ni coautores.

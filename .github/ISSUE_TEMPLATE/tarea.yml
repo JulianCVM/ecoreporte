@@ -1,0 +1,39 @@
+name: Tarea o funcionalidad
+description: Un entregable del plan (docs/README.md). Una issue = un PR.
+labels: []
+body:
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto
+      description: Por qué hace falta. Cita el requisito (RF/RNF) o el ADR.
+    validations:
+      required: true
+  - type: textarea
+    id: tareas
+    attributes:
+      label: Qué hay que hacer
+      description: Lista de pasos con casillas.
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      description: Cómo se comprueba que está hecha.
+    validations:
+      required: true
+  - type: textarea
+    id: referencias
+    attributes:
+      label: Referencias
+      description: Documentos de docs/, ADR, issues relacionadas.
+  - type: checkboxes
+    id: costo
+    attributes:
+      label: Costo cero
+      options:
+        - label: No exige plan Blaze, tarjeta ni APIs de pago (ADR 0007). Si lo exige, lleva la etiqueta «proyectado».
+          required: true

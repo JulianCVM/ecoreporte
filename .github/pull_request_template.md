@@ -4,6 +4,8 @@
 
 Cierra #
 
+<!-- El PR va contra `dev` (release: `dev` → `main`). El título es el asunto del squash: `<gitmoji> <tipo>(<ámbito>): <asunto>`. -->
+
 ## Ámbito
 
 - [ ] app - [ ] auth - [ ] reports - [ ] map - [ ] operator - [ ] functions - [ ] rules - [ ] config - [ ] infra - [ ] docs
