@@ -2,7 +2,7 @@
 
 <!-- Resumen en 1-3 líneas. -->
 
-Cierra #
+Closes #
 
 <!-- El PR va contra `dev` (release: `dev` → `main`). El título es el asunto del squash: `<gitmoji> <tipo>(<ámbito>): <asunto>`. -->
 
