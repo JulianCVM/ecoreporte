@@ -49,12 +49,23 @@ npm run verify          # typecheck + lint + formato + pruebas
 npm run android         # compila el development build y lo instala en el emulador
 ```
 
-En Windows, antes del primer `npm run android` (PowerShell):
+En Windows (PowerShell), cada terminal nueva se prepara con:
 
 ```powershell
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
-$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+. .\scripts\entorno-android.ps1   # Java 21 de Android Studio, ANDROID_HOME, adb y emulator
 ```
+
+Para trabajar se usan dos terminales:
+
+```powershell
+npm run emulators       # terminal 1: Auth, Firestore y Storage en local (interfaz: http://localhost:4000)
+npm run android         # terminal 2: compila, instala en el emulador y arranca Metro
+```
+
+**Memoria:**
+
+- La primera compilación con Gradle y el emulador de Android necesita unos 6 GB libres.
+- Si el emulador no arranca solo, ábrelo desde el Device Manager de Android Studio antes de `npm run android`.
 
 La configuración de Firebase (`google-services.json`) no está en el repositorio: ver [`docs/04-infraestructura.md`](docs/04-infraestructura.md).
 

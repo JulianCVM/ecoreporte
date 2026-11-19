@@ -145,5 +145,5 @@ flowchart LR
 2. Habilitar Authentication (correo y Google), Crashlytics y Remote Config.
 3. Crear una clave en Google AI Studio (sin tarjeta) y guardarla en `functions/.secret.local` como `GEMINI_API_KEY=...`.
 4. `npm install` → `cp .env.example .env`.
-5. `npm run emulators`. Carga los datos de `.emulator-data/` y los guarda al salir con Ctrl+C. Para empezar sin datos: `npm run emulators:limpio`. Requiere Java 21 o superior; sirve el JBR de Android Studio en `JAVA_HOME`. La interfaz queda en <http://localhost:4000>.
+5. `npm run emulators`. Carga los datos de `.emulator-data/` y los guarda al salir con Ctrl+C. Para empezar sin datos: `npm run emulators:limpio`. Usa el Java 21 de Android Studio: en Windows, `. .\scripts\entorno-android.ps1`. Con un JDK más nuevo en el `PATH`, el emulador de Storage avisa errores del runtime de reglas. Mientras no exista `functions/` (#5), el script levanta solo Auth, Firestore y Storage; si se pide el emulador de Functions sin su configuración, el CLI se cae (`Extensions Emulator is running but Functions emulator is not`). La interfaz queda en <http://localhost:4000>.
 6. En otra terminal: `npm run android`.
