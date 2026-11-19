@@ -250,7 +250,7 @@ la foto entra a una cola propia, porque Storage no encola subidas
   - PR de `dev` a `main` con **merge commit**, titulado `🔖 chore(app): publica vX.Y.Z`.
   - Después, la etiqueta `vX.Y.Z` en `main` y la Release en GitHub.
 - **Estados del Project:** Backlog → Listo → En curso (rama abierta) → En revisión (PR abierto) → Hecho (PR fusionado en `dev`).
-- **Vínculo con la issue:** el PR la cierra con `Cierra #N`. Como `dev` es la rama por defecto, la issue se cierra al fusionar.
+- **Vínculo con la issue:** el PR la cierra con `Closes #N`. GitHub solo reconoce las palabras clave en inglés. Como `dev` es la rama por defecto, la issue se cierra al fusionar.
 - **Título del PR** con el formato del asunto de commit. **Descripción** en español con la
   plantilla `.github/pull_request_template.md`. **Sin** «Generated with…», emojis de
   herramientas, firmas ni coautores.
