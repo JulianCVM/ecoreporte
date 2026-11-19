@@ -41,14 +41,14 @@ No hay presupuesto, así que **nada de lo que hoy corre puede pedir tarjeta**.
 
 ## Recursos de `ecoreporte-dev` (Spark, creado el 2026-11-18)
 
-| Recurso                | Configuración                                                                    |
-| ---------------------- | -------------------------------------------------------------------------------- |
-| App Android            | `com.juliancvm.ecoreporte.dev` → `google-services.json` (fuera de git)           |
-| Authentication         | Correo/contraseña y Google (necesita la huella SHA-1 del keystore de depuración) |
-| FCM                    | Temas `operators` y tokens por usuario                                           |
-| Crashlytics, Analytics | Habilitados                                                                      |
-| Remote Config          | Plantilla con las claves de `05-parametrizacion.md`                              |
-| App Check              | Proveedor de depuración                                                          |
+| Recurso                | Configuración                                                                                                                                                                |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App Android            | `com.juliancvm.ecoreporte.dev` → `google-services.json` en la raíz, fuera de git. **[HECHO] 2026-11-18**. Falta registrar la SHA-1 (la necesitan Google Sign-In y App Check) |
+| Authentication         | Correo/contraseña y Google (necesita la huella SHA-1 del keystore de depuración)                                                                                             |
+| FCM                    | Temas `operators` y tokens por usuario                                                                                                                                       |
+| Crashlytics, Analytics | Habilitados                                                                                                                                                                  |
+| Remote Config          | Plantilla con las claves de `05-parametrizacion.md`                                                                                                                          |
+| App Check              | Proveedor de depuración                                                                                                                                                      |
 
 Auth y Firestore en la nube **no se usan** mientras se trabaje con emuladores. Así no hay datos de prueba dispersos ni consumo de cuota.
 
@@ -134,7 +134,7 @@ flowchart LR
 
 ## Puesta en marcha desde cero (local)
 
-1. En `ecoreporte-dev` (plan Spark), registrar la app Android `com.juliancvm.ecoreporte.dev` con la SHA-1 de depuración y descargar `google-services.json` a la raíz del repo.
+1. En `ecoreporte-dev` (plan Spark), registrar la app Android `com.juliancvm.ecoreporte.dev` con la SHA-1 de depuración y descargar `google-services.json` a la raíz del repo. La SHA-1 se obtiene con `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android` (con el `keytool` del JBR de Android Studio).
 2. Habilitar Authentication (correo y Google), Crashlytics y Remote Config.
 3. Crear una clave en Google AI Studio (sin tarjeta) y guardarla en `functions/.secret.local` como `GEMINI_API_KEY=...`.
 4. `npm install` → `cp .env.example .env`.

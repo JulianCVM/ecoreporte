@@ -4,11 +4,11 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 
 ## Build (app.config.ts)
 
-| Parámetro                   | Valores                                  | Por defecto                                    | Efecto                                                           |
-| --------------------------- | ---------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
-| `APP_VARIANT`               | `development` · `preview` · `production` | `development`                                  | Nombre («EcoReporte Dev»), paquete (`.dev`), archivo de Firebase |
-| `GOOGLE_SERVICES_JSON`      | Ruta a un archivo                        | `./google-services.json` (local, fuera de git) | Configuración de Firebase en Android                             |
-| `GOOGLE_SERVICE_INFO_PLIST` | Ruta a un archivo                        | `./GoogleService-Info.plist`                   | Configuración de Firebase en iOS                                 |
+| Parámetro                   | Valores                                  | Por defecto                                                                                                                     | Efecto                                                                                                                                                                        |
+| --------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_VARIANT`               | `development` · `preview` · `production` | `development`                                                                                                                   | Nombre («EcoReporte Dev»), paquete (`.dev`), archivo de Firebase                                                                                                              |
+| `GOOGLE_SERVICES_JSON`      | Ruta a un archivo                        | `./google-services.json` en `development` y `preview`; `./google-services.prod.json` en `production` (proyectado). Fuera de git | Configuración de Firebase en Android. Si el archivo no existe, `app.config.ts` no lo declara: lint, pruebas y CI no lo necesitan, y el prebuild falla con el aviso del plugin |
+| `GOOGLE_SERVICE_INFO_PLIST` | Ruta a un archivo                        | `./GoogleService-Info.plist`                                                                                                    | Configuración de Firebase en iOS. **Sin usar todavía:** iOS no se compila en esta etapa                                                                                       |
 
 ## Cliente (`EXPO_PUBLIC_*`, validadas con zod en `src/lib/config/env.ts`)
 
