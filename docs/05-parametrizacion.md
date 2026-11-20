@@ -12,13 +12,13 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 
 ## Cliente (`EXPO_PUBLIC_*`, validadas con zod en `src/lib/config/env.ts`)
 
-| Variable                            | Tipo                     | Por defecto                      | Rango                        | Efecto                                                         |
-| ----------------------------------- | ------------------------ | -------------------------------- | ---------------------------- | -------------------------------------------------------------- |
-| `EXPO_PUBLIC_ENV`                   | `local` · `dev` · `prod` | `local`                          | —                            | Etiqueta del entorno en la pantalla de perfil y en Crashlytics |
-| `EXPO_PUBLIC_USE_EMULATORS`         | booleano                 | `true` en local                  | —                            | Conecta Auth, Firestore, Storage y Functions al emulador       |
-| `EXPO_PUBLIC_EMULATOR_HOST`         | host                     | `10.0.2.2` (emulador de Android) | IP o host                    | IP del PC si se prueba en un celular físico                    |
-| `EXPO_PUBLIC_APP_CHECK_DEBUG_TOKEN` | texto                    | vacío                            | —                            | Solo en dev                                                    |
-| `EXPO_PUBLIC_MAP_STYLE_URL`         | URL                      | estilo `liberty` de OpenFreeMap  | URL de un estilo de MapLibre | Mapa sin clave ni costo (ADR 0008)                             |
+| Variable                            | Tipo                     | Por defecto                      | Rango                        | Efecto                                                                                                     |
+| ----------------------------------- | ------------------------ | -------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `EXPO_PUBLIC_ENV`                   | `local` · `dev` · `prod` | `local`                          | —                            | Etiqueta del entorno en la pantalla de perfil y en Crashlytics                                             |
+| `EXPO_PUBLIC_USE_EMULATORS`         | booleano                 | `true` en local                  | —                            | Conecta Auth, Firestore, Storage y Functions al emulador                                                   |
+| `EXPO_PUBLIC_EMULATOR_HOST`         | host                     | `10.0.2.2` (emulador de Android) | IP o host                    | Celular físico por USB: `127.0.0.1` con `npm run android:puertos` (`adb reverse`). Por Wi-Fi: la IP del PC |
+| `EXPO_PUBLIC_APP_CHECK_DEBUG_TOKEN` | texto                    | vacío                            | —                            | Solo en dev                                                                                                |
+| `EXPO_PUBLIC_MAP_STYLE_URL`         | URL                      | estilo `liberty` de OpenFreeMap  | URL de un estilo de MapLibre | Mapa sin clave ni costo (ADR 0008)                                                                         |
 
 ## Constantes del dominio en el cliente (`src/features/reports/domain/limits.ts`)
 

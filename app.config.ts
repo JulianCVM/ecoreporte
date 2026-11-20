@@ -79,8 +79,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     '@react-native-firebase/app',
     '@react-native-firebase/auth',
-    // React Native Firebase en iOS exige frameworks estáticos.
-    ['expo-build-properties', { ios: { useFrameworks: 'static' } }],
+    [
+      'expo-build-properties',
+      {
+        // React Native Firebase en iOS exige frameworks estáticos.
+        ios: { useFrameworks: 'static' },
+        // RN 0.88 trae Kotlin 2.2.0, pero firebase-auth 25 (BoM 35.0.2 de RNFB 27.1.1) está
+        // compilado con Kotlin 2.4 y 2.2 no lee esos metadatos. Kotlin 2.3 sí (issue #4).
+        android: { kotlinVersion: '2.3.21' },
+      },
+    ],
     [
       'expo-splash-screen',
       {

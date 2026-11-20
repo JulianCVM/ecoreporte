@@ -62,9 +62,16 @@ npm run emulators       # terminal 1: Auth, Firestore y Storage en local (interf
 npm run android         # terminal 2: compila, instala en el emulador y arranca Metro
 ```
 
+**Con un celular físico (recomendado si el PC tiene poca memoria):**
+
+1. Activa la depuración USB en Opciones de desarrollador, conecta el cable y acepta «Permitir depuración USB». `adb devices` debe mostrarlo como `device`.
+2. En `.env`: `EXPO_PUBLIC_EMULATOR_HOST=127.0.0.1`.
+3. `npm run android:puertos`: con `adb reverse`, el celular llega a los emuladores de Auth, Firestore y Storage del PC por el cable, sin Wi-Fi ni firewall. Se repite cada vez que se reconecta el cable.
+4. `npm run android`: Expo detecta el celular, compila en el PC y lo instala.
+
 **Memoria:**
 
-- La primera compilación con Gradle y el emulador de Android necesita unos 6 GB libres.
+- La compilación ocurre siempre en el PC. Gradle necesita unos 4 GB libres; con el emulador de Android, unos 6 GB.
 - Si el emulador no arranca solo, ábrelo desde el Device Manager de Android Studio antes de `npm run android`.
 
 La configuración de Firebase (`google-services.json`) no está en el repositorio: ver [`docs/04-infraestructura.md`](docs/04-infraestructura.md).
