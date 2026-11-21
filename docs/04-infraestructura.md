@@ -95,7 +95,9 @@ flowchart LR
   TAG -.proyectado.-> E[firebase deploy -P prod · WIF]
 ```
 
-- Hoy corren A, M y B. B instala `functions/` por separado (`npm ci` en esa carpeta) y corre `npm run verify` del paquete. C se agrega con las pruebas de reglas (#7).
+- Hoy corren A, M, B y C.
+  - B instala `functions/` por separado (`npm ci` en esa carpeta) y corre `npm run verify` del paquete.
+  - C instala Java 21 y corre `npm run test:rules`: levanta los emuladores de Firestore y Storage con el proyecto `demo-ecoreporte` y prueba cada regla. Los JAR de los emuladores se guardan en la caché de Actions.
 - **APK del portafolio:**
   - Se genera en local con `npx expo run:android --variant release`, o con EAS Build dentro de la cuota gratuita mensual de Expo **[POR CONFIRMAR los límites vigentes]**.
   - Se sube a GitHub Releases.

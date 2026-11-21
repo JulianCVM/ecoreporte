@@ -56,6 +56,7 @@ cp .env.example .env
 npm run entorno:diagnostico   # revisa Node, Java, SDK, NDK, CMake, AVD, puertos y memoria
 npm run verify                # typecheck + lint + formato + pruebas
 npm run functions:verify      # lo mismo para functions/
+npm run test:rules            # reglas de Firestore y Storage contra los emuladores (necesita Java 21)
 npm run android               # compila el development build y lo instala en el emulador
 ```
 

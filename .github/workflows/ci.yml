@@ -65,3 +65,25 @@ jobs:
           cache-dependency-path: functions/package-lock.json
       - run: npm ci
       - run: npm run verify
+
+  rules:
+    name: Reglas · Firestore y Storage contra el emulador
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Los emuladores de Firestore y Storage corren sobre Java 21 (docs/04-infraestructura.md).
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      # Los JAR de los emuladores pesan cientos de MB: se guardan entre corridas.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ hashFiles('package-lock.json') }}
+      - run: npm ci
+      - run: npm run test:rules

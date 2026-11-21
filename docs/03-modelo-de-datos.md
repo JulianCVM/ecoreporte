@@ -68,4 +68,8 @@ La foto de un reporte `rejected` o `cancelled` se borra a los `PHOTO_RETENTION_R
 | Borrar                  | No                                                                            | No                                                                       | Sí                   |
 | `evaluations`, `alerts` | No                                                                            | Leer; `alerts` también actualizar `status`                               | Todo                 |
 
-Las reglas se prueban con `@firebase/rules-unit-testing` contra el emulador: cada regla tiene una prueba de **quién sí** y otra de **quién no**.
+Las reglas se prueban con `@firebase/rules-unit-testing` contra el emulador (`npm run test:rules`, en `firebase/__tests__/`): cada regla tiene una prueba de **quién sí** y otra de **quién no**.
+
+- Una prueba recorre todos los pares de estados y exige que `firestore.rules` permita exactamente las transiciones de `report-status.ts`.
+- Los límites (precisión, nota, tamaño de la foto, nombre) se importan de los `limits.ts`, así que si la app y las reglas se desalinean, una prueba falla.
+- `firebase` (SDK web) va fijado en la misma versión que exige React Native Firebase (13.1.0). Con dos copias de `@firebase/app`, el modo compat que usa `rules-unit-testing` no encuentra Firestore.
