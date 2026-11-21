@@ -16,6 +16,10 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
+import {
+  DISPLAY_NAME_MAX_CHARS,
+  DISPLAY_NAME_MIN_CHARS,
+} from '../../src/features/auth/domain/limits';
 import { actors, createRulesEnv, REPORT_ID, UIDS } from './rules-test-env';
 
 let env: RulesTestEnvironment;
@@ -148,6 +152,14 @@ describe('users: perfil de cada usuario', () => {
     const own = doc(as.author.firestore(), ownPath);
     await assertSucceeds(setDoc(own, profile({ fcmTokens: tokens(5) })));
     await assertFails(updateDoc(own, { fcmTokens: tokens(6) }));
+  });
+
+  it(`el nombre tiene entre ${DISPLAY_NAME_MIN_CHARS} y ${DISPLAY_NAME_MAX_CHARS} caracteres`, async () => {
+    const own = doc(as.author.firestore(), ownPath);
+    await assertSucceeds(setDoc(own, profile({ displayName: 'a'.repeat(DISPLAY_NAME_MAX_CHARS) })));
+    await assertFails(updateDoc(own, { displayName: 'a'.repeat(DISPLAY_NAME_MAX_CHARS + 1) }));
+    await assertFails(updateDoc(own, { displayName: 'a'.repeat(DISPLAY_NAME_MIN_CHARS - 1) }));
+    await assertFails(updateDoc(own, { displayName: 42 }));
   });
 
   it('nadie borra su perfil desde el cliente', async () => {

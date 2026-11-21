@@ -12,7 +12,10 @@ service firebase.storage {
     // Foto original: la sube el autor una sola vez; la Function la lee con el Admin SDK.
     match /reports/{uid}/{fileName} {
       allow read: if request.auth != null && (request.auth.uid == uid || isOperator());
+      // En Storage, subir encima de un archivo que ya existe cuenta como `create`, no como `update`:
+      // sin `resource == null` el autor podría cambiar la foto después del veredicto (ADR 0004).
       allow create: if request.auth != null
+        && resource == null
         && request.auth.uid == uid
         && fileName.matches('^[A-Za-z0-9]{20}[.]jpg$')
         && request.resource.size <= 2 * 1024 * 1024

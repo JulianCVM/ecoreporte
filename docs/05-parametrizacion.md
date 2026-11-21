@@ -35,11 +35,11 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 
 ## Constantes de la cuenta en el cliente (`src/features/auth/domain/limits.ts`)
 
-| Constante                | Por defecto | Por qué                                                                                                      |
-| ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------ |
-| `PASSWORD_MIN_LENGTH`    | 8           | Firebase Auth acepta desde 6; se piden 8, el mínimo de NIST SP 800-63B. Solo se exige al crear la cuenta     |
-| `DISPLAY_NAME_MIN_CHARS` | 2           | Nombre visible en el perfil                                                                                  |
-| `DISPLAY_NAME_MAX_CHARS` | 40          | Cabe en una línea del perfil y del rastro del operador. **[PROPUESTO]** que `firestore.rules` lo valide (#7) |
+| Constante                | Por defecto | Por qué                                                                                                          |
+| ------------------------ | ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| `PASSWORD_MIN_LENGTH`    | 8           | Firebase Auth acepta desde 6; se piden 8, el mínimo de NIST SP 800-63B. Solo se exige al crear la cuenta         |
+| `DISPLAY_NAME_MIN_CHARS` | 2           | Nombre visible en el perfil                                                                                      |
+| `DISPLAY_NAME_MAX_CHARS` | 40          | Cabe en una línea del perfil y del rastro del operador. `firestore.rules` valida el mismo rango en `users/{uid}` |
 
 ## Remote Config (cambia sin publicar la app; el valor por defecto va en el código)
 

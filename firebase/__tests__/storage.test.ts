@@ -3,7 +3,7 @@ import {
   assertSucceeds,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { getBytes, ref, uploadBytes } from 'firebase/storage';
+import { deleteObject, getBytes, ref, uploadBytes } from 'firebase/storage';
 
 import { PHOTO_MAX_BYTES } from '../../src/features/reports/domain/limits';
 import { actors, createRulesEnv, REPORT_ID, UIDS } from './rules-test-env';
@@ -57,6 +57,12 @@ describe('subir la foto de un reporte', () => {
     ],
   ])('no se sube %s', async (_case, upload) => {
     await assertFails(upload());
+  });
+
+  it('el autor no la reemplaza ni la borra: se sube una sola vez', async () => {
+    await seedPhoto();
+    await assertFails(uploadBytes(ref(as.author.storage(), photoPath), bytes(2048), JPEG));
+    await assertFails(deleteObject(ref(as.author.storage(), photoPath)));
   });
 });
 
