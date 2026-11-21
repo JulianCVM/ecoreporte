@@ -132,11 +132,14 @@ Lo hace la función con el Admin SDK, y las reglas lo impiden desde el cliente.
 ## Verificación obligatoria antes de terminar
 
 ```bash
-npm run verify        # typecheck + lint + formato + pruebas
-npx expo-doctor       # si cambiaste dependencias o app.config.ts
+npm run verify             # app: typecheck + lint + formato + pruebas
+npm run functions:verify   # functions/: typecheck + lint + pruebas
+npx expo-doctor            # si cambiaste dependencias o app.config.ts
 ```
 
-Cuando existan `functions/` y las pruebas de reglas, su verificación se agrega aquí.
+`npm run verify` no revisa `functions/`: ese paquete tiene su propio typecheck, lint y Jest.
+Por eso se corren los dos (antes, `npm --prefix functions install`). Cuando existan las pruebas
+de reglas (#7), su verificación se agrega aquí.
 Si cambiaste algo que se ve, ábrelo en el emulador de Android (claro y oscuro) y recorre
 el flujo. Si algo falla, dilo con la salida; nunca digas «listo» con la CI en rojo. No
 desactives reglas de lint (`eslint-disable`) para esconder un problema.

@@ -44,7 +44,11 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 
 ## Servidor (`params` y secretos de Cloud Functions, `functions/src/config.ts`)
 
-En local los valores salen de `functions/.env.local` y los secretos de `functions/.secret.local`, ambos fuera de git. En la producción proyectada salen de `functions/.env.prod` y de Secret Manager.
+En local los valores salen de `functions/.env.local` y los secretos de `functions/.secret.local`, ambos fuera de git; sus moldes son `functions/.env.example` y `functions/.secret.local.example`. En la producción proyectada salen de `functions/.env.prod` y de Secret Manager.
+
+- **Validación:** `readServerConfig()` lee los parámetros dentro de cada función y los valida con zod (`functions/src/server-config.ts`). Un valor fuera de rango hace fallar la función con un error que nombra el parámetro, en vez de clasificar con él.
+- **Umbrales:** Firebase no tiene parámetros decimales (`defineFloat`), así que `AI_APPROVE_THRESHOLD` y `AI_REVIEW_THRESHOLD` se declaran como texto (`"0.80"`) y se convierten a número al validar.
+- **Región:** las funciones corren en `us-east1` (`REGION`, ADR 0005).
 
 | Parámetro                       | Tipo        | Por defecto                                 | Rango                            | Efecto                                                                                                                                                                              |
 | ------------------------------- | ----------- | ------------------------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
