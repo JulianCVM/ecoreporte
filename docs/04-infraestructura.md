@@ -141,7 +141,7 @@ flowchart LR
 
 ## Puesta en marcha desde cero (local)
 
-1. En `ecoreporte-dev` (plan Spark), registrar la app Android `com.juliancvm.ecoreporte.dev` con la SHA-1 de depuración y descargar `google-services.json` a la raíz del repo. La SHA-1 se obtiene con `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android` (con el `keytool` del JBR de Android Studio).
+1. En `ecoreporte-dev` (plan Spark), registrar la app Android `com.juliancvm.ecoreporte.dev` con la SHA-1 de depuración y descargar `google-services.json` a la raíz del repo. La SHA-1 de depuración es la del keystore que Expo copia de su plantilla a `android/app/debug.keystore`, no la de `~/.android/debug.keystore`: `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25`. Es la misma en todos los equipos, porque `prebuild` siempre genera ese archivo; se comprueba con `keytool -list -v -keystore android/app/debug.keystore -alias androiddebugkey -storepass android`. Ese keystore es público y solo sirve para depuración.
 2. Habilitar Authentication (correo y Google), Crashlytics y Remote Config.
 3. Crear una clave en Google AI Studio (sin tarjeta) y guardarla en `functions/.secret.local` como `GEMINI_API_KEY=...`.
 4. `npm install` → `cp .env.example .env`.

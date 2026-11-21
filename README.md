@@ -40,7 +40,13 @@ La producción en Blaze con Vertex AI está diseñada y costeada en [`docs/04-in
 
 ## Ejecutar en local
 
-Requisitos: Node 24, Android Studio con un emulador, JDK 21 (en Windows sirve el que trae Android Studio) y el `google-services.json` de `ecoreporte-dev` en la raíz (ver [`docs/04-infraestructura.md`](docs/04-infraestructura.md)).
+Requisitos:
+
+- Node 24 (React Native 0.88 exige 22.13+ o 24.3+).
+- Android Studio con un emulador.
+- JDK 21. En Windows sirve el que trae Android Studio.
+- En Windows, CMake 3.31 o superior en el SDK: Android Studio → SDK Manager → SDK Tools → CMake, con «Show Package Details» marcado. Ver «Rutas largas en Windows», más abajo.
+- El `google-services.json` de `ecoreporte-dev` en la raíz (ver [`docs/04-infraestructura.md`](docs/04-infraestructura.md)).
 
 ```bash
 npm install
@@ -54,6 +60,14 @@ En Windows (PowerShell), cada terminal nueva se prepara con:
 ```powershell
 . .\scripts\entorno-android.ps1   # Java 21 de Android Studio, ANDROID_HOME, adb y emulator
 ```
+
+**Rutas largas en Windows:** las rutas de compilación de C++ de `react-native-worklets` y `react-native-screens` pasan de 260 caracteres. El CMake 3.22 del SDK trae ninja 1.10, que falla con `ninja: error: mkdir(...)`. Con CMake 3.31 o superior instalado, después de generar `android/` (el primer `npm run android` o `npx expo prebuild --platform android`), agrega esta línea a `android/local.properties`, con tu usuario y tu versión de CMake:
+
+```properties
+cmake.dir=C\:\\Users\\<usuario>\\AppData\\Local\\Android\\Sdk\\cmake\\3.31.6
+```
+
+`android/` se genera y está fuera de git: después de cada `expo prebuild --clean` se repite este paso.
 
 Para trabajar se usan dos terminales:
 
