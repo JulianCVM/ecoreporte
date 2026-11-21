@@ -7,7 +7,7 @@ module.exports = defineConfig([
   expoConfig,
   prettierConfig,
   {
-    ignores: ['dist/*', '.expo/*', 'android/*', 'ios/*', 'functions/lib/*', 'coverage/*'],
+    ignores: ['dist/*', '.expo/*', 'android/*', 'ios/*', 'functions/*', 'coverage/*'],
   },
   {
     // Los scripts del entorno son CommonJS que corre Node directamente, fuera de Metro.
