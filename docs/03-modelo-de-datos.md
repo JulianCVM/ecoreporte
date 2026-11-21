@@ -38,6 +38,8 @@ Bitácora inmutable de cada llamada a la IA (la «base de logs» del documento o
 
 `{displayName, createdAt, reportsToday: {date, count}, fcmTokens: [≤ 5]}`. El usuario lee y edita su documento salvo `reportsToday`, que es de la Function. **El rol no va aquí:** va en los custom claims del token (`role`).
 
+La app lo crea al registrarse, solo con `displayName` y `createdAt` (`serverTimestamp()`), en `src/features/auth/data/auth-repository.ts`.
+
 ### Índices compuestos (`firebase/firestore.indexes.json`)
 
 | Colección | Campos                          | Para                       |

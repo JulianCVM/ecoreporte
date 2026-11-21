@@ -52,3 +52,16 @@ export const firebaseProjectId = (): string => getApp().options.projectId ?? 'de
 
 /** `true` si la app quedó conectada a la Emulator Suite. */
 export const usingEmulators = (): boolean => emulatorTargets(appEnv) !== null;
+
+// Funciones modulares que usan las capas `data/` de las features. Se re-exportan desde aquí para
+// que este archivo siga siendo el único que importa el SDK; se agregan a medida que hacen falta.
+export {
+  createUserWithEmailAndPassword,
+  getIdToken,
+  onIdTokenChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  type User,
+} from '@react-native-firebase/auth';
+export { doc, serverTimestamp, setDoc } from '@react-native-firebase/firestore';
