@@ -50,9 +50,12 @@ Requisitos:
 
 ```bash
 npm install
+npm --prefix functions install   # Cloud Functions: paquete propio
+cp functions/.env.example functions/.env.local
 cp .env.example .env
 npm run entorno:diagnostico   # revisa Node, Java, SDK, NDK, CMake, AVD, puertos y memoria
 npm run verify                # typecheck + lint + formato + pruebas
+npm run functions:verify      # lo mismo para functions/
 npm run android               # compila el development build y lo instala en el emulador
 ```
 
@@ -84,7 +87,7 @@ cmake.dir=C\:\\Users\\<usuario>\\AppData\\Local\\Android\\Sdk\\cmake\\3.31.6
 Para trabajar se usan dos terminales:
 
 ```powershell
-npm run emulators       # terminal 1: Auth, Firestore y Storage en local (interfaz: http://localhost:4000)
+npm run emulators       # terminal 1: Auth, Firestore, Storage y Functions en local (interfaz: http://localhost:4000)
 npm run android         # terminal 2: compila, instala en el emulador y arranca Metro
 ```
 

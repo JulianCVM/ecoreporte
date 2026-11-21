@@ -52,6 +52,7 @@ service-account*.json
 # Firebase
 functions/.secret.local
 functions/.env.local
+functions/lib/
 .emulator-data/
 .firebase/
 *-debug.log

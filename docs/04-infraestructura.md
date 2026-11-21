@@ -95,7 +95,7 @@ flowchart LR
   TAG -.proyectado.-> E[firebase deploy -P prod · WIF]
 ```
 
-- Hoy corren A y M. B y C se agregan cuando existan `functions/` y las pruebas de reglas.
+- Hoy corren A, M y B. B instala `functions/` por separado (`npm ci` en esa carpeta) y corre `npm run verify` del paquete. C se agrega con las pruebas de reglas (#7).
 - **APK del portafolio:**
   - Se genera en local con `npx expo run:android --variant release`, o con EAS Build dentro de la cuota gratuita mensual de Expo **[POR CONFIRMAR los límites vigentes]**.
   - Se sube a GitHub Releases.
@@ -143,7 +143,7 @@ flowchart LR
 
 1. En `ecoreporte-dev` (plan Spark), registrar la app Android `com.juliancvm.ecoreporte.dev` con la SHA-1 de depuración y descargar `google-services.json` a la raíz del repo. La SHA-1 de depuración es la del keystore que Expo copia de su plantilla a `android/app/debug.keystore`, no la de `~/.android/debug.keystore`: `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25`. Es la misma en todos los equipos, porque `prebuild` siempre genera ese archivo; se comprueba con `keytool -list -v -keystore android/app/debug.keystore -alias androiddebugkey -storepass android`. Ese keystore es público y solo sirve para depuración.
 2. Habilitar Authentication (correo y Google), Crashlytics y Remote Config.
-3. Crear una clave en Google AI Studio (sin tarjeta) y guardarla en `functions/.secret.local` como `GEMINI_API_KEY=...`.
-4. `npm install` → `cp .env.example .env` → `npm run entorno:diagnostico`. El diagnóstico revisa Node, JDK, SDK, NDK, CMake (en Windows, 3.31 o superior por las rutas largas), AVD, `adb reverse`, los emuladores y la memoria, y dice cómo arreglar lo que falla.
-5. `npm run emulators`. Carga los datos de `.emulator-data/` y los guarda al salir con Ctrl+C. Para empezar sin datos: `npm run emulators:limpio`. Usa Java 21: en Windows, `. .\scripts\entorno-android.ps1` toma el JBR de Android Studio o, si está incompleto, otro JDK 21 instalado. Con un JDK más nuevo en el `PATH`, el emulador de Storage avisa errores del runtime de reglas. Mientras no exista `functions/` (#5), el script levanta solo Auth, Firestore y Storage; si se pide el emulador de Functions sin su configuración, el CLI se cae (`Extensions Emulator is running but Functions emulator is not`). La interfaz queda en <http://localhost:4000>.
+3. `cp functions/.env.example functions/.env.local`. Solo para `AI_PROVIDER=gemini-api`: crear una clave en Google AI Studio (sin tarjeta) y guardarla en `functions/.secret.local` (molde: `functions/.secret.local.example`).
+4. `npm install` → `npm --prefix functions install` → `cp .env.example .env` → `npm run entorno:diagnostico`. El diagnóstico revisa Node, JDK, SDK, NDK, CMake (en Windows, 3.31 o superior por las rutas largas), AVD, `adb reverse`, los emuladores y la memoria, y dice cómo arreglar lo que falla.
+5. `npm run emulators`. Carga los datos de `.emulator-data/` y los guarda al salir con Ctrl+C. Para empezar sin datos: `npm run emulators:limpio`. Usa Java 21: en Windows, `. .scriptsentorno-android.ps1` toma el JBR de Android Studio o, si está incompleto, otro JDK 21 instalado. Con un JDK más nuevo en el `PATH`, el emulador de Storage avisa errores del runtime de reglas. El script compila `functions/` (`npm --prefix functions run build`) y levanta Auth, Firestore, Storage y Functions. Si a `functions/.env.local` le falta un parámetro, el CLI lo completa con el valor por defecto de `functions/src/config.ts` y lo escribe en ese archivo. La interfaz queda en <http://localhost:4000>.
 6. En otra terminal: `npm run android`. En Windows, si `android/` se regeneró, antes `npm run entorno:cmake` (ver README, «Rutas largas en Windows»).
