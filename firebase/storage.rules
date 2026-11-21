@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// BORRADOR 2026-11-18: sin pruebas todavía (ver firestore.rules).
+// Probadas contra el emulador en firebase/__tests__/storage.test.ts (`npm run test:rules`).
 // Límites iguales a src/features/reports/domain/limits.ts.
 service firebase.storage {
   match /b/{bucket}/o {

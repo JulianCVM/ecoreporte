@@ -1,8 +1,9 @@
 rules_version = '2';
 
-// BORRADOR 2026-11-18: sin pruebas todavía. No se despliega hasta tener las pruebas
-// con @firebase/rules-unit-testing (docs/03-modelo-de-datos.md · Reglas de acceso).
-// Las transiciones repiten src/features/reports/domain/report-status.ts.
+// Probadas contra el emulador en firebase/__tests__ (`npm run test:rules`, issue #7): cada regla
+// tiene una prueba de quién sí y otra de quién no (docs/03-modelo-de-datos.md · Reglas de acceso).
+// Las transiciones repiten src/features/reports/domain/report-status.ts y una prueba compara
+// todos los pares. Los límites repiten los de src/features/*/domain/limits.ts.
 service cloud.firestore {
   match /databases/{database}/documents {
 
