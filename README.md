@@ -50,29 +50,44 @@ Requisitos:
 
 ```bash
 npm install
+npm --prefix functions install   # Cloud Functions: paquete propio
+cp functions/.env.example functions/.env.local
 cp .env.example .env
-npm run verify          # typecheck + lint + formato + pruebas
-npm run android         # compila el development build y lo instala en el emulador
+npm run entorno:diagnostico   # revisa Node, Java, SDK, NDK, CMake, AVD, puertos y memoria
+npm run verify                # typecheck + lint + formato + pruebas
+npm run functions:verify      # lo mismo para functions/
+npm run android               # compila el development build y lo instala en el emulador
 ```
+
+**Diagnóstico del entorno:** `npm run entorno:diagnostico` marca cada requisito con ✅, ⚠️ o ❌ y dice cómo arreglar lo que falla. No cambia nada del sistema y termina con error si algo bloquea el build. Conviene correrlo antes de compilar en un equipo nuevo.
 
 En Windows (PowerShell), cada terminal nueva se prepara con:
 
 ```powershell
-. .\scripts\entorno-android.ps1   # Java 21 de Android Studio, ANDROID_HOME, adb y emulator
+. .\scripts\entorno-android.ps1   # JDK 21, ANDROID_HOME, adb, emulator y, al final, el diagnóstico
 ```
 
-**Rutas largas en Windows:** las rutas de compilación de C++ de `react-native-worklets` y `react-native-screens` pasan de 260 caracteres. El CMake 3.22 del SDK trae ninja 1.10, que falla con `ninja: error: mkdir(...)`. Con CMake 3.31 o superior instalado, después de generar `android/` (el primer `npm run android` o `npx expo prebuild --platform android`), agrega esta línea a `android/local.properties`, con tu usuario y tu versión de CMake:
+El script prefiere el JBR de Android Studio. Si el JBR está incompleto (le falta `lib\jvm.cfg` y `java` no arranca), usa otro JDK 21 instalado en `Program Files` (`Java`, `Eclipse Adoptium` o `Microsoft`). Si el Node del sistema es más viejo que el exigido y hay un Node portátil en `%LOCALAPPDATA%\Programs\node24`, lo pone primero en el `PATH`.
+
+**Rutas largas en Windows:** las rutas de compilación de C++ de `react-native-worklets` y `react-native-screens` pasan de 260 caracteres. El CMake 3.22 del SDK trae ninja 1.10, que falla con `ninja: error: mkdir(...)`. Con CMake 3.31 o superior instalado:
+
+```powershell
+npx expo prebuild --platform android   # solo si android/ no existe
+npm run entorno:cmake                  # fija cmake.dir en android/local.properties
+```
+
+`android/` se genera y está fuera de git: después de cada `expo prebuild --clean` se repite `npm run entorno:cmake`.
+
+Sin el script, la línea a mano en `android/local.properties` es:
 
 ```properties
 cmake.dir=C\:\\Users\\<usuario>\\AppData\\Local\\Android\\Sdk\\cmake\\3.31.6
 ```
 
-`android/` se genera y está fuera de git: después de cada `expo prebuild --clean` se repite este paso.
-
 Para trabajar se usan dos terminales:
 
 ```powershell
-npm run emulators       # terminal 1: Auth, Firestore y Storage en local (interfaz: http://localhost:4000)
+npm run emulators       # terminal 1: Auth, Firestore, Storage y Functions en local (interfaz: http://localhost:4000)
 npm run android         # terminal 2: compila, instala en el emulador y arranca Metro
 ```
 
@@ -87,6 +102,15 @@ npm run android         # terminal 2: compila, instala en el emulador y arranca 
 
 - La compilación ocurre siempre en el PC. Gradle necesita unos 4 GB libres; con el emulador de Android, unos 6 GB.
 - Si el emulador no arranca solo, ábrelo desde el Device Manager de Android Studio antes de `npm run android`.
+
+**Después del primer build:** la app queda instalada y solo hace falta compilar de nuevo si cambian las dependencias nativas o `app.config.ts`. Para el día a día:
+
+```powershell
+emulator -avd <nombre>               # o el Device Manager de Android Studio
+npm run emulators                    # otra terminal
+npm run android:puertos              # si EXPO_PUBLIC_EMULATOR_HOST=127.0.0.1
+npx expo start --dev-client          # Metro; la tecla «a» abre la app en el emulador
+```
 
 La configuración de Firebase (`google-services.json`) no está en el repositorio: ver [`docs/04-infraestructura.md`](docs/04-infraestructura.md).
 
