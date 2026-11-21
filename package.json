@@ -54,6 +54,8 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
+    "entorno:diagnostico": "node scripts/diagnostico-entorno.js",
+    "entorno:cmake": "node scripts/fijar-cmake.js",
     "android:puertos": "adb reverse tcp:9099 tcp:9099 && adb reverse tcp:8080 tcp:8080 && adb reverse tcp:9199 tcp:9199",
     "ios": "expo run:ios",
     "web": "expo start --web",
