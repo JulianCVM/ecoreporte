@@ -14,6 +14,11 @@ export const Colors = {
     backgroundElement: '#F0F0F3',
     backgroundSelected: '#E0E1E6',
     textSecondary: '#60646C',
+    // Verde de acción; contraste 5,3:1 con onPrimary (WCAG AA para texto normal).
+    primary: '#1E7A4C',
+    onPrimary: '#ffffff',
+    // Rojo de error; 5,6:1 sobre el fondo claro.
+    danger: '#C62828',
   },
   dark: {
     text: '#ffffff',
@@ -21,6 +26,11 @@ export const Colors = {
     backgroundElement: '#212225',
     backgroundSelected: '#2E3135',
     textSecondary: '#B0B4BA',
+    // En oscuro el verde se aclara y el texto encima pasa a negro: 10,4:1.
+    primary: '#5FCB8F',
+    onPrimary: '#000000',
+    // 9,2:1 sobre el fondo oscuro.
+    danger: '#FF8A80',
   },
 } as const;
 
