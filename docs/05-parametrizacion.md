@@ -33,6 +33,14 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 | `UPLOAD_MAX_ATTEMPTS`      | 8                | 3–20     | Reintentos de la cola antes de pedir ayuda al usuario       |
 | `UPLOAD_BACKOFF_BASE_MS`   | 2 000            | —        | Espera exponencial: 2 s, 4 s, 8 s… hasta 5 min              |
 
+## Constantes de la cuenta en el cliente (`src/features/auth/domain/limits.ts`)
+
+| Constante                | Por defecto | Por qué                                                                                                      |
+| ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------ |
+| `PASSWORD_MIN_LENGTH`    | 8           | Firebase Auth acepta desde 6; se piden 8, el mínimo de NIST SP 800-63B. Solo se exige al crear la cuenta     |
+| `DISPLAY_NAME_MIN_CHARS` | 2           | Nombre visible en el perfil                                                                                  |
+| `DISPLAY_NAME_MAX_CHARS` | 40          | Cabe en una línea del perfil y del rastro del operador. **[PROPUESTO]** que `firestore.rules` lo valide (#7) |
+
 ## Remote Config (cambia sin publicar la app; el valor por defecto va en el código)
 
 | Clave                       | Por defecto | Efecto                                                  |
