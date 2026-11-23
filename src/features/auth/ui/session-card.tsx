@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
 
+import { Card } from '@/components/card';
 import { FormError } from '@/components/form-error';
 import { PrimaryButton } from '@/components/primary-button';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
 
 import { unregisterDevice } from '@/features/notifications/data/push-repository';
 import { reportError } from '@/lib/observability/errors';
@@ -39,7 +37,7 @@ export function SessionCard() {
   }
 
   return (
-    <ThemedView type="backgroundElement" style={styles.card}>
+    <Card>
       <ThemedText type="smallBold">{displayName ?? 'Sin nombre'}</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         {email}
@@ -52,10 +50,6 @@ export function SessionCard() {
         loading={loading}
         onPress={handleSignOut}
       />
-    </ThemedView>
+    </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  card: { gap: Spacing.two, padding: Spacing.three, borderRadius: Spacing.three },
-});

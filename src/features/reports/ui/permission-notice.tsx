@@ -1,9 +1,8 @@
-import { Linking, StyleSheet } from 'react-native';
+import { Linking } from 'react-native';
 
+import { Card } from '@/components/card';
 import { PrimaryButton } from '@/components/primary-button';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
 
 /** Textos del aviso para un permiso concreto (cámara, ubicación). */
 export type PermissionNoticeTexts = {
@@ -37,7 +36,7 @@ export function PermissionNotice({ access, texts, onRequest, onError }: Props) {
   }
 
   return (
-    <ThemedView type="backgroundElement" style={styles.card}>
+    <Card>
       <ThemedText type="smallBold">
         {blocked ? `⚠ ${texts.blockedTitle}` : texts.askTitle}
       </ThemedText>
@@ -46,10 +45,6 @@ export function PermissionNotice({ access, texts, onRequest, onError }: Props) {
         label={blocked ? 'Abrir los ajustes' : texts.askLabel}
         onPress={blocked ? openSettings : onRequest}
       />
-    </ThemedView>
+    </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  card: { gap: Spacing.two, padding: Spacing.three, borderRadius: Spacing.three },
-});

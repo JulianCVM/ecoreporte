@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 
+import { Card } from '@/components/card';
 import { FormError } from '@/components/form-error';
+import { StatusBadge } from '@/components/status-badge';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { trackEvent } from '@/lib/observability/analytics';
 
@@ -51,10 +51,13 @@ export function ReportDetailView({ reportId }: { reportId: string }) {
         entry={uploads.find((entry) => entry.reportId === report.id)}
         variant="full"
       />
-      <ThemedView type="backgroundElement" style={styles.section}>
-        <ThemedText type="smallBold" accessibilityLabel={`Estado: ${status.label}`}>
-          {status.symbol} {status.label}
-        </ThemedText>
+      <Card>
+        <StatusBadge
+          symbol={status.symbol}
+          label={status.label}
+          tone={status.tone}
+          accessibilityLabel={`Estado: ${status.label}`}
+        />
         <ThemedText type="small">{status.description}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           Tomado el {formatDate(report.capturedAtMs)}
@@ -65,29 +68,25 @@ export function ReportDetailView({ reportId }: { reportId: string }) {
           </ThemedText>
         ) : null}
         {report.note ? <ThemedText type="small">«{report.note}»</ThemedText> : null}
-      </ThemedView>
+      </Card>
 
       {report.ai ? (
-        <ThemedView type="backgroundElement" style={styles.section}>
+        <Card>
           <ThemedText type="smallBold" accessibilityRole="header">
             Análisis automático
           </ThemedText>
           <ThemedText type="small">{report.ai.summary}</ThemedText>
           <ThemedText type="small">Tipo: {categoryLabel(report.ai.category)}</ThemedText>
           <ThemedText type="small">Complejidad: {complexityLabel(report.ai.complexity)}</ThemedText>
-        </ThemedView>
+        </Card>
       ) : null}
 
-      <ThemedView type="backgroundElement" style={styles.section}>
+      <Card>
         <ThemedText type="smallBold" accessibilityRole="header">
           Historial
         </ThemedText>
         <ReportTimeline steps={report.timeline} />
-      </ThemedView>
+      </Card>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  section: { gap: Spacing.one, padding: Spacing.three, borderRadius: Spacing.three },
-});

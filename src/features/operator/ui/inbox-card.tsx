@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 
+import { Card } from '@/components/card';
 import { FormError } from '@/components/form-error';
 import { PrimaryButton } from '@/components/primary-button';
+import { StatusBadge } from '@/components/status-badge';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { statusPresentation } from '@/features/reports/domain/my-report';
 import {
@@ -55,13 +56,16 @@ export function InboxCard({ report, onChangeStatus }: Props) {
   }
 
   return (
-    <ThemedView type="backgroundElement" style={styles.card}>
+    <Card>
       <View style={styles.summary}>
         <ReportPhoto report={report} entry={undefined} variant="thumbnail" />
         <View style={styles.texts}>
-          <ThemedText type="smallBold" accessibilityLabel={`Estado: ${status.label}`}>
-            {status.symbol} {status.label}
-          </ThemedText>
+          <StatusBadge
+            symbol={status.symbol}
+            label={status.label}
+            tone={status.tone}
+            accessibilityLabel={`Estado: ${status.label}`}
+          />
           <ThemedText type="small" themeColor="textSecondary">
             {formatDate(report.capturedAtMs)}
           </ThemedText>
@@ -88,17 +92,16 @@ export function InboxCard({ report, onChangeStatus }: Props) {
         <PrimaryButton
           key={action.to}
           label={action.label}
-          variant={action.to === 'rejected' ? 'secondary' : 'primary'}
+          variant={action.to === 'rejected' ? 'danger' : 'primary'}
           loading={busy === action.to}
           onPress={() => confirm(action)}
         />
       ))}
-    </ThemedView>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { gap: Spacing.one, padding: Spacing.three, borderRadius: Spacing.three },
   summary: { flexDirection: 'row', gap: Spacing.three },
   texts: { flex: 1, gap: Spacing.one },
 });

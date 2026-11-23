@@ -83,10 +83,17 @@ export function nextAlertStep(status: AlertStatus): AlertStep | null {
   return NEXT_STEP[status] ?? null;
 }
 
-const STATUS_TEXTS: Record<AlertStatus, { symbol: string; label: string }> = {
-  open: { symbol: '⚠', label: 'Alerta sin atender' },
-  acknowledged: { symbol: '◑', label: 'Alerta atendida' },
-  closed: { symbol: '✓', label: 'Alerta cerrada' },
+type AlertStatusText = {
+  symbol: string;
+  label: string;
+  /** Color de apoyo de la insignia. */
+  tone: 'success' | 'warning' | 'danger';
+};
+
+const STATUS_TEXTS: Record<AlertStatus, AlertStatusText> = {
+  open: { symbol: '⚠', label: 'Alerta sin atender', tone: 'danger' },
+  acknowledged: { symbol: '◑', label: 'Alerta atendida', tone: 'warning' },
+  closed: { symbol: '✓', label: 'Alerta cerrada', tone: 'success' },
 };
 
 /** Símbolo y nombre del estado de una alerta: nunca se comunica solo con color (RNF06). */
