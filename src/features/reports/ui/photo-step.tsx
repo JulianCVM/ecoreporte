@@ -25,8 +25,12 @@ const CAMERA_NOTICE: PermissionNoticeTexts = {
     'Para activarlo, abre los ajustes de la app, entra a «Permisos», toca «Cámara» y elige «Permitir solo mientras se usa la app». Después vuelve a esta pantalla.',
 };
 
-type Phase =
-  { name: 'camera' } | { name: 'compressing' } | { name: 'preview'; photo: EncodedPhoto };
+type Props = {
+  /** Foto lista para enviar; `null` mientras no hay una. */
+  photo: EncodedPhoto | null;
+  /** Recibe la foto ya comprimida, o `null` cuando el usuario decide repetirla. */
+  onPhotoChange: (photo: EncodedPhoto | null) => void;
+};
 
 /** Borra un archivo temporal sin interrumpir el flujo: si falla, queda en el registro. */
 function discardFile(uri: string) {
@@ -39,39 +43,38 @@ function discardFile(uri: string) {
 
 /**
  * Paso de la foto del reporte (RF01, issue #8): permiso, cámara, compresión y vista previa
- * con la opción de repetir.
+ * con la opción de repetir. La foto vive en el formulario, que es quien la envía.
  */
-export function PhotoStep() {
+export function PhotoStep({ photo, onPhotoChange }: Props) {
   const theme = useTheme();
   const isFocused = useIsFocused();
   const [permission, requestPermission, refreshPermission] = useCameraPermissions();
-  const [phase, setPhase] = useState<Phase>({ name: 'camera' });
+  const [compressing, setCompressing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useRefreshOnForeground(refreshPermission, setError);
 
   async function handleCapture(rawUri: string) {
     setError(null);
-    setPhase({ name: 'compressing' });
+    setCompressing(true);
     try {
-      const photo = await compressPhoto(rawUri);
-      setPhase({ name: 'preview', photo });
+      onPhotoChange(await compressPhoto(rawUri));
     } catch (cause) {
       setError(
         cause instanceof PhotoTooLargeError
           ? 'La foto quedó demasiado pesada incluso comprimida. Toma otra con menos detalle.'
           : `No se pudo preparar la foto: ${cause instanceof Error ? cause.message : String(cause)}`,
       );
-      setPhase({ name: 'camera' });
     } finally {
+      setCompressing(false);
       discardFile(rawUri);
     }
   }
 
-  function handleRetake(photo: EncodedPhoto) {
-    discardFile(photo.uri);
+  function handleRetake(discarded: EncodedPhoto) {
+    discardFile(discarded.uri);
     setError(null);
-    setPhase({ name: 'camera' });
+    onPhotoChange(null);
   }
 
   function handleRequestPermission() {
@@ -85,9 +88,9 @@ export function PhotoStep() {
   return (
     <>
       <FormError message={error} />
-      {phase.name === 'preview' ? (
-        <PhotoPreview photo={phase.photo} onRetake={() => handleRetake(phase.photo)} />
-      ) : phase.name === 'compressing' ? (
+      {photo ? (
+        <PhotoPreview photo={photo} onRetake={() => handleRetake(photo)} />
+      ) : compressing ? (
         <>
           <ActivityIndicator color={theme.primary} accessibilityLabel="Preparando la foto" />
           <ThemedText type="small" themeColor="textSecondary">
