@@ -64,4 +64,13 @@ export {
   updateProfile,
   type User,
 } from '@react-native-firebase/auth';
-export { doc, serverTimestamp, setDoc } from '@react-native-firebase/firestore';
+export {
+  collection,
+  doc,
+  GeoPoint,
+  serverTimestamp,
+  setDoc,
+  Timestamp,
+  updateDoc,
+} from '@react-native-firebase/firestore';
+export { getMetadata, putFile, ref, setMaxUploadRetryTime } from '@react-native-firebase/storage';
