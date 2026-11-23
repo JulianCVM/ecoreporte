@@ -102,7 +102,15 @@ Regla de veredicto (función pura `decideVerdict`, con pruebas):
 2. Si `confidence ≥ AI_APPROVE_THRESHOLD` → `approved`.
 3. Si `confidence ≥ AI_REVIEW_THRESHOLD` → `needs_review`.
 4. Si no → `rejected`.
-5. Si la IA falla después de `AI_MAX_ATTEMPTS`, está apagada o se alcanzó `AI_DAILY_LIMIT` → `needs_review`.
+5. Si la IA falla después de `AI_MAX_ATTEMPTS`, está apagada, se alcanzó `AI_DAILY_LIMIT` o el autor pasó de `REPORTS_PER_USER_PER_DAY` → `needs_review`, con el motivo en `statusHistory`.
+
+**Topes de uso** (`functions/src/reports/usage-limits.ts`, RNF05): se revisan en este orden, antes de llamar a la IA.
+
+1. **Por usuario:** cada foto que llega suma uno a `users/{uid}.reportsToday`. Si el reporte pasa de `REPORTS_PER_USER_PER_DAY`, va a revisión (`user_daily_limit`) y no gasta IA.
+2. **Interruptor:** con `AI_ENABLED=false` va a revisión (`ai_disabled`).
+3. **Global:** cada intento reserva una llamada en `aiUsage/{día}`. Sin cupo antes del primer intento, va a revisión (`ai_daily_limit`); sin cupo para un reintento, cuenta como fallo de la IA (`ai_failed`).
+
+El día de los contadores es el de Colombia (`USAGE_TIME_ZONE = America/Bogota`). La cuota gratuita de Gemini se reinicia a otra hora: por eso `AI_DAILY_LIMIT` va por debajo de ella.
 
 **`classifyReportPhoto`** (`functions/src/reports/`): disparador de Storage con `maxInstances = AI_MAX_INSTANCES`. Comprueba que la ruta sea `reports/{uid}/{id}.jpg`, que el reporte sea de ese autor y que siga en `pending_upload`; en una transacción lo pasa a `processing_ai`, llama a la IA hasta `AI_MAX_ATTEMPTS` veces, guarda cada intento en `evaluations` y escribe el veredicto con `ai` y `ai.latencyMs`. Un reporte cancelado o ya clasificado se ignora.
 

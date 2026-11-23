@@ -1,7 +1,8 @@
 import { ClassifierError, type Classifier, type ClassifierOutput } from '../ai/classifier';
 import type { ServerConfig } from '../server-config';
 import type { AiResult, Evaluation, FinalOutcome, ReportStore } from './report-store';
-import { decideVerdict } from './verdict';
+import { usageDay } from './usage-limits';
+import { decideVerdict, type ReviewReason } from './verdict';
 
 /** Ruta de la foto de un reporte; la misma forma que exige `storage.rules`. */
 const PHOTO_PATH_PATTERN = /^reports\/([^/]+)\/([A-Za-z0-9]{20})\.jpg$/;
@@ -14,6 +15,8 @@ export const REPORT_WAIT_MS = 1_000;
 type ClassifyConfig = Pick<
   ServerConfig,
   | 'aiEnabled'
+  | 'aiDailyLimit'
+  | 'reportsPerUserPerDay'
   | 'aiMaxAttempts'
   | 'aiTimeoutMs'
   | 'aiApproveThreshold'
@@ -63,13 +66,16 @@ function toEvaluation(
 /**
  * Llama a la IA hasta `AI_MAX_ATTEMPTS` veces y deja cada intento en `evaluations`.
  *
- * @returns El campo `ai` del reporte, o `null` si todos los intentos fallaron.
+ * Antes de cada intento reserva una llamada en `AI_DAILY_LIMIT`: los reintentos también
+ * gastan cuota.
+ *
+ * @returns El campo `ai` del reporte, o por qué no hay clasificación.
  */
 async function classifyWithRetries(
   reportId: string,
   photoPath: string,
   deps: ClassifyDeps,
-): Promise<AiResult | null> {
+): Promise<AiResult | Extract<ReviewReason, 'ai_failed' | 'ai_daily_limit'>> {
   const { classifier, config, store } = deps;
   const base = {
     provider: classifier.provider,
@@ -79,6 +85,10 @@ async function classifyWithRetries(
   };
   let bytes: Buffer | null = null;
   for (let attempt = 1; attempt <= config.aiMaxAttempts; attempt += 1) {
+    if (!(await store.reserveAiCall(usageDay(deps.nowMs()), config.aiDailyLimit))) {
+      // Sin cupo antes del primer intento es el tope; a mitad de los reintentos, la IA falló.
+      return attempt === 1 ? 'ai_daily_limit' : 'ai_failed';
+    }
     let startedAtMs = deps.nowMs();
     const timing = () => ({ latencyMs: deps.nowMs() - startedAtMs, atMs: deps.nowMs() });
     try {
@@ -102,7 +112,36 @@ async function classifyWithRetries(
       await store.saveEvaluation(reportId, toEvaluation({ ...base, attempt }, { error }, timing()));
     }
   }
-  return null;
+  return 'ai_failed';
+}
+
+/**
+ * Decide qué pasa con un reporte ya tomado. Los topes van antes que la IA: un reporte que no
+ * se va a clasificar no gasta cuota.
+ */
+async function decideOutcome(
+  reportId: string,
+  authorUid: string,
+  photoPath: string,
+  deps: ClassifyDeps,
+): Promise<FinalOutcome> {
+  const { store, config } = deps;
+  const review = (reason: ReviewReason): FinalOutcome => ({
+    status: 'needs_review',
+    ai: null,
+    reason,
+  });
+  const withinUserLimit = await store.countUserReport(
+    authorUid,
+    usageDay(deps.nowMs()),
+    config.reportsPerUserPerDay,
+  );
+  if (!withinUserLimit) return review('user_daily_limit');
+  if (!config.aiEnabled) return review('ai_disabled');
+
+  const result = await classifyWithRetries(reportId, photoPath, deps);
+  if (typeof result === 'string') return review(result);
+  return { status: decideVerdict(result, config), ai: result, reason: null };
 }
 
 /**
@@ -110,7 +149,8 @@ async function classifyWithRetries(
  *
  * No confía en el cliente: comprueba que la ruta sea de un reporte, que el documento exista,
  * que sea del mismo autor y que siga en `pending_upload`. Una vez en `processing_ai`, el
- * reporte siempre termina en un estado: si la IA está apagada o falla, va a `needs_review`.
+ * reporte siempre termina en un estado: si la IA está apagada o falla, o se alcanzó un tope
+ * de uso (RNF05), va a `needs_review` con el motivo.
  *
  * @param photoPath Ruta del objeto en Storage (`reports/{uid}/{reportId}.jpg`).
  */
@@ -121,7 +161,7 @@ export async function classifyUploadedPhoto(
   const match = PHOTO_PATH_PATTERN.exec(photoPath);
   if (!match) return { outcome: 'ignored', why: 'not_a_report_photo' };
   const [, authorUid, reportId] = match;
-  const { store, config } = deps;
+  const { store } = deps;
 
   let started = await store.startProcessing(reportId, { authorUid, photoPath }, deps.nowMs());
   for (let wait = 1; started === 'missing' && wait < REPORT_WAIT_ATTEMPTS; wait += 1) {
@@ -130,19 +170,14 @@ export async function classifyUploadedPhoto(
   }
   if (started !== 'started') return { outcome: 'ignored', why: started };
 
-  let outcome: FinalOutcome;
-  if (!config.aiEnabled) {
-    outcome = { status: 'needs_review', ai: null, reason: 'ai_disabled' };
-  } else {
-    const ai = await classifyWithRetries(reportId, photoPath, deps).catch((error: unknown) => {
-      // Ni siquiera se pudo guardar la evaluación: el reporte no puede quedarse colgado.
+  const outcome = await decideOutcome(reportId, authorUid, photoPath, deps).catch(
+    (error: unknown): FinalOutcome => {
+      // Falló algo fuera de la IA (un contador, una evaluación): el reporte no puede quedarse
+      // colgado en processing_ai.
       console.error(`[classify] ${reportId}: falló la clasificación`, error);
-      return null;
-    });
-    outcome = ai
-      ? { status: decideVerdict(ai, config), ai, reason: null }
-      : { status: 'needs_review', ai: null, reason: 'ai_failed' };
-  }
+      return { status: 'needs_review', ai: null, reason: 'ai_failed' };
+    },
+  );
 
   await store.finish(reportId, outcome, deps.nowMs());
   return { outcome: 'decided', reportId, status: outcome.status };

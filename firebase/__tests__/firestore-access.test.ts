@@ -173,4 +173,13 @@ describe('todo lo demás está cerrado', () => {
     await assertFails(setDoc(doc(as.operator.firestore(), 'config/app'), { open: true }));
     await assertFails(getDoc(doc(as.operator.firestore(), 'config/app')));
   });
+
+  it('el contador global de la IA solo lo toca la Function', async () => {
+    const path = 'aiUsage/2026-11-23';
+    await seed(path, { date: '2026-11-23', count: 199 });
+    for (const actor of [as.author, as.operator]) {
+      await assertFails(getDoc(doc(actor.firestore(), path)));
+      await assertFails(setDoc(doc(actor.firestore(), path), { date: '2026-11-23', count: 0 }));
+    }
+  });
 });

@@ -2,9 +2,13 @@ import { FieldValue, Timestamp, type Firestore } from 'firebase-admin/firestore'
 import { z } from 'zod';
 
 import type { Evaluation, FinalOutcome, ReportStore, StartResult } from './report-store';
+import { addUserReport, reserveAiCall } from './usage-limits';
 
 const REPORTS = 'reports';
 const EVALUATIONS = 'evaluations';
+const USERS = 'users';
+/** Contador global de llamadas a la IA: un documento por día (docs/03-modelo-de-datos.md). */
+const AI_USAGE = 'aiUsage';
 /** Quién movió el estado en `statusHistory` cuando fue una función. */
 const SYSTEM_ACTOR = 'system';
 
@@ -50,6 +54,28 @@ export class FirestoreReportStore implements ReportStore {
         updatedAt: FieldValue.serverTimestamp(),
       });
       return 'started';
+    });
+  }
+
+  countUserReport(authorUid: string, day: string, limit: number): Promise<boolean> {
+    const reference = this.db.collection(USERS).doc(authorUid);
+    return this.db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(reference);
+      const { next, withinLimit } = addUserReport(snapshot.get('reportsToday'), day, limit);
+      // `merge`: una cuenta anterior al registro en `users` no tiene documento todavía.
+      transaction.set(reference, { reportsToday: next }, { merge: true });
+      return withinLimit;
+    });
+  }
+
+  reserveAiCall(day: string, limit: number): Promise<boolean> {
+    const reference = this.db.collection(AI_USAGE).doc(day);
+    return this.db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(reference);
+      const next = reserveAiCall(snapshot.data(), day, limit);
+      if (!next) return false;
+      transaction.set(reference, { ...next, updatedAt: FieldValue.serverTimestamp() });
+      return true;
     });
   }
 

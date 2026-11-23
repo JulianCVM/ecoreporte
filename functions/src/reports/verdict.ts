@@ -5,7 +5,13 @@ import type { ServerConfig } from '../server-config';
 export type Verdict = 'approved' | 'needs_review' | 'rejected';
 
 /** Por qué un reporte fue a revisión sin veredicto de la IA (regla 5 de docs/05). */
-export type ReviewReason = 'ai_failed' | 'ai_disabled';
+export type ReviewReason =
+  | 'ai_failed'
+  | 'ai_disabled'
+  /** Se alcanzó `AI_DAILY_LIMIT`: no quedan llamadas a la IA hoy. */
+  | 'ai_daily_limit'
+  /** El autor pasó de `REPORTS_PER_USER_PER_DAY`. */
+  | 'user_daily_limit';
 
 type Thresholds = Pick<ServerConfig, 'aiApproveThreshold' | 'aiReviewThreshold'>;
 
