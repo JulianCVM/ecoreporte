@@ -44,6 +44,8 @@ La app lo crea al registrarse, solo con `displayName` y `createdAt` (`serverTime
 
 `reportsToday` lo lleva `classifyReportPhoto`: `date` es el día en Colombia (`AAAA-MM-DD`) y `count` los reportes cuya foto llegó ese día. Al pasar de `REPORTS_PER_USER_PER_DAY`, el reporte va a `needs_review` sin llamar a la IA.
 
+`fcmTokens` lo escribe la app (un token por dispositivo, máximo 5). `onReportStatusChange` los lee para avisar al autor y borra los que FCM ya no reconoce.
+
 ### `aiUsage/{AAAA-MM-DD}`
 
 `{date, count, updatedAt}`: llamadas a la IA del día (hora de Colombia), reintentos incluidos. Lo escribe solo la Function, en una transacción, y no deja pasar de `AI_DAILY_LIMIT`. El cliente no lo lee ni lo escribe: cae en el cierre general de las reglas.
