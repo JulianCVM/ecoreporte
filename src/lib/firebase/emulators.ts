@@ -23,7 +23,9 @@ export type EmulatorTargets = {
  * la guarda para que un error de configuración nunca mande datos de producción al PC.
  * En el emulador de Android, el PC es `10.0.2.2`.
  */
-export function emulatorTargets(env: AppEnv): EmulatorTargets | null {
+export function emulatorTargets(
+  env: Pick<AppEnv, 'env' | 'useEmulators' | 'emulatorHost'>,
+): EmulatorTargets | null {
   if (!env.useEmulators || env.env === 'prod') return null;
   return {
     authUrl: `http://${env.emulatorHost}:${EMULATOR_PORTS.auth}`,

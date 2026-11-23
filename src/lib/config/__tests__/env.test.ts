@@ -7,7 +7,14 @@ describe('parseEnv', () => {
       useEmulators: false,
       emulatorHost: '10.0.2.2',
       appCheckDebugToken: undefined,
+      mapStyleUrl: 'https://tiles.openfreemap.org/styles/liberty',
     });
+  });
+
+  it('acepta otro estilo de mapa y rechaza uno que no es una URL', () => {
+    const url = 'https://example.com/estilo.json';
+    expect(parseEnv({ EXPO_PUBLIC_MAP_STYLE_URL: url }).mapStyleUrl).toBe(url);
+    expect(() => parseEnv({ EXPO_PUBLIC_MAP_STYLE_URL: 'liberty' })).toThrow(/MAP_STYLE_URL/);
   });
 
   it('trata las variables vacías como ausentes', () => {

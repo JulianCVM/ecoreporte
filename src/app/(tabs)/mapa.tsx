@@ -1,11 +1,10 @@
 import { ScreenScaffold } from '@/components/screen-scaffold';
+import { NearbyReports } from '@/features/map/ui/nearby-reports';
 
 export default function MapScreen() {
   return (
-    <ScreenScaffold
-      title="Mapa"
-      description="Reportes aprobados cerca de ti."
-      pending={['RF05 · Mapa por cercanía (geohash) con filtros por estado, tipo y complejidad']}
-    />
+    <ScreenScaffold title="Mapa" description="Reportes aprobados cerca de ti, en vivo.">
+      <NearbyReports />
+    </ScreenScaffold>
   );
 }
