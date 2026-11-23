@@ -7,6 +7,7 @@
 | [03 · Modelo de datos](03-modelo-de-datos.md) | Colecciones, campos, índices, rutas de Storage y quién puede qué                   |
 | [04 · Infraestructura](04-infraestructura.md) | Proyectos, recursos, IAM, secretos, CI/CD, costos, recuperación y puesta en marcha |
 | [05 · Parametrización](05-parametrizacion.md) | Cada valor configurable: dónde vive, por defecto, rango y efecto                   |
+| [06 · Demostración](06-demo.md)               | Cómo mostrar la app de punta a punta con los emuladores y datos sembrados          |
 | [ADR](adr/)                                   | Las decisiones y su porqué                                                         |
 
 ## Plan de trabajo (2026-11-18 → 2026-12-07)
