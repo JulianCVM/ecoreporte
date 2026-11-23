@@ -1,18 +1,29 @@
 import { useCameraPermissions } from 'expo-camera';
 import { useIsFocused } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, AppState } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator } from 'react-native';
 
 import { FormError } from '@/components/form-error';
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 
 import { compressPhoto, deletePhotoFile } from '../data/photo-compressor';
-import { cameraAccess } from '../domain/camera-access';
+import { permissionAccess } from '../domain/permission-access';
 import { PhotoTooLargeError, type EncodedPhoto } from '../domain/photo-compression';
-import { CameraPermissionNotice } from './camera-permission-notice';
+import { PermissionNotice, type PermissionNoticeTexts } from './permission-notice';
 import { PhotoCamera } from './photo-camera';
 import { PhotoPreview } from './photo-preview';
+import { useRefreshOnForeground } from './use-refresh-on-foreground';
+
+const CAMERA_NOTICE: PermissionNoticeTexts = {
+  askTitle: 'EcoReporte necesita la cámara',
+  askBody:
+    'La foto del reporte se toma en el momento, desde la app. La cámara solo se usa mientras esta pantalla está abierta.',
+  askLabel: 'Permitir la cámara',
+  blockedTitle: 'El permiso de cámara está negado',
+  blockedBody:
+    'Para activarlo, abre los ajustes de la app, entra a «Permisos», toca «Cámara» y elige «Permitir solo mientras se usa la app». Después vuelve a esta pantalla.',
+};
 
 type Phase =
   { name: 'camera' } | { name: 'compressing' } | { name: 'preview'; photo: EncodedPhoto };
@@ -37,17 +48,7 @@ export function PhotoStep() {
   const [phase, setPhase] = useState<Phase>({ name: 'camera' });
   const [error, setError] = useState<string | null>(null);
 
-  // El usuario puede conceder el permiso en los ajustes del sistema: al volver a la app hay
-  // que consultarlo otra vez, o el aviso de «negado» se queda aunque ya esté activo.
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (state) => {
-      if (state !== 'active') return;
-      refreshPermission().catch((cause: unknown) => {
-        setError(`No se pudo consultar el permiso de cámara: ${String(cause)}`);
-      });
-    });
-    return () => subscription.remove();
-  }, [refreshPermission]);
+  useRefreshOnForeground(refreshPermission, setError);
 
   async function handleCapture(rawUri: string) {
     setError(null);
@@ -79,7 +80,7 @@ export function PhotoStep() {
     });
   }
 
-  const access = cameraAccess(permission);
+  const access = permissionAccess(permission);
 
   return (
     <>
@@ -94,8 +95,9 @@ export function PhotoStep() {
           </ThemedText>
         </>
       ) : access === 'ask' || access === 'blocked' ? (
-        <CameraPermissionNotice
+        <PermissionNotice
           access={access}
+          texts={CAMERA_NOTICE}
           onRequest={handleRequestPermission}
           onError={setError}
         />
