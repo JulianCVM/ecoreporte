@@ -10,6 +10,12 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 | `GOOGLE_SERVICES_JSON`      | Ruta a un archivo                        | `./google-services.json` en `development` y `preview`; `./google-services.prod.json` en `production` (proyectado). Fuera de git | Configuración de Firebase en Android. Si el archivo no existe, `app.config.ts` no lo declara: lint, pruebas y CI no lo necesitan, y el prebuild falla con el aviso del plugin |
 | `GOOGLE_SERVICE_INFO_PLIST` | Ruta a un archivo                        | `./GoogleService-Info.plist`                                                                                                    | Configuración de Firebase en iOS. **Sin usar todavía:** iOS no se compila en esta etapa                                                                                       |
 
+**Permisos nativos** (config plugins de `app.config.ts`; cambiarlos exige un development build nuevo):
+
+| Plugin        | Configuración                                                                              | Efecto                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `expo-camera` | `recordAudioAndroid: false`, `microphonePermission: false`, `barcodeScannerEnabled: false` | El APK solo pide `CAMERA`: la app toma fotos, no graba audio ni lee códigos (RF01) |
+
 ## Cliente (`EXPO_PUBLIC_*`, validadas con zod en `src/lib/config/env.ts`)
 
 | Variable                            | Tipo                     | Por defecto                      | Rango                        | Efecto                                                                                                     |
@@ -27,11 +33,15 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 | `PHOTO_MAX_EDGE_PX`        | 1600             | 800–2400 | Detalle suficiente para la IA sin pasar de 2 MB             |
 | `PHOTO_JPEG_QUALITY`       | 0.7              | 0.5–0.9  | Tamaño frente a calidad                                     |
 | `PHOTO_MAX_BYTES`          | 2 097 152 (2 MB) | —        | Igual al límite de `storage.rules`                          |
+| `PHOTO_MIN_EDGE_PX`        | 800              | —        | Piso del lado mayor si la foto no cabe en 2 MB              |
+| `PHOTO_MIN_JPEG_QUALITY`   | 0.5              | —        | Piso de la calidad si la foto no cabe en 2 MB               |
 | `LOCATION_MAX_ACCURACY_M`  | 50               | 10–100   | Por encima, la app no deja enviar                           |
 | `LOCATION_GOOD_ACCURACY_M` | 10               | —        | Meta del documento original; la app la muestra como «buena» |
 | `NOTE_MAX_CHARS`           | 280              | —        | Igual a las reglas                                          |
 | `UPLOAD_MAX_ATTEMPTS`      | 8                | 3–20     | Reintentos de la cola antes de pedir ayuda al usuario       |
 | `UPLOAD_BACKOFF_BASE_MS`   | 2 000            | —        | Espera exponencial: 2 s, 4 s, 8 s… hasta 5 min              |
+
+**Compresión de la foto** (`domain/photo-compression.ts`): la app prueba cuatro intentos en orden y se queda con el primero que pesa `PHOTO_MAX_BYTES` o menos. Baja la calidad antes que la resolución, porque la IA necesita el detalle: 1600 px a 0.7 → 1600 px a 0.5 → 1200 px a 0.5 → 800 px a 0.5. Si ninguno cabe, la app pide repetir la foto; nunca sube una que `storage.rules` rechazaría.
 
 ## Constantes de la cuenta en el cliente (`src/features/auth/domain/limits.ts`)
 

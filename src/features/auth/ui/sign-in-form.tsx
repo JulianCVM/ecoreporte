@@ -1,13 +1,13 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
 
+import { FormError } from '@/components/form-error';
 import { PrimaryButton } from '@/components/primary-button';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 
 import { signIn } from '../data/auth-repository';
 import { validateSignIn, type SignInInput } from '../domain/credentials';
-import { FormError } from './form-error';
 import { useAuthSubmit } from './use-auth-submit';
 
 /** Inicio de sesión con correo y contraseña. Al entrar, la guarda de rutas abre las pestañas. */

@@ -39,7 +39,7 @@ sequenceDiagram
   participant FN as Function classifyReportPhoto
   participant G as Gemini (AI_PROVIDER)
   U->>A: Toma la foto y confirma
-  A->>A: Comprime (≤ PHOTO_MAX_EDGE_PX, JPEG PHOTO_JPEG_QUALITY)
+  A->>A: Comprime (≤ PHOTO_MAX_EDGE_PX, JPEG PHOTO_JPEG_QUALITY, ≤ PHOTO_MAX_BYTES)
   A->>F: set reports/{id} status=pending_upload (funciona sin red)
   A->>Q: Guarda la foto y la entrada {id, path, intentos}
   Note over A,Q: El usuario ya ve su reporte en «Mis reportes»

@@ -5,6 +5,10 @@
 export const PHOTO_MAX_EDGE_PX = 1600;
 export const PHOTO_JPEG_QUALITY = 0.7;
 export const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
+// Pisos de los rangos de docs/05-parametrizacion.md: hasta ahí baja la compresión si una foto
+// con mucho detalle no cabe en PHOTO_MAX_BYTES con los valores normales.
+export const PHOTO_MIN_EDGE_PX = 800;
+export const PHOTO_MIN_JPEG_QUALITY = 0.5;
 
 export const LOCATION_MAX_ACCURACY_M = 50;
 export const LOCATION_GOOD_ACCURACY_M = 10;

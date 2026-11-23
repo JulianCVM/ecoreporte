@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
+import { FormError } from '@/components/form-error';
 import { PrimaryButton } from '@/components/primary-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -8,7 +9,6 @@ import { Spacing } from '@/constants/theme';
 
 import { AuthActionError, signOut } from '../data/auth-repository';
 import { useSession } from '../data/use-session';
-import { FormError } from './form-error';
 
 /** Quién inició sesión y el botón para salir (pantalla Perfil). */
 export function SessionCard() {

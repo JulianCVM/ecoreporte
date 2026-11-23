@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 
-/** Error general del formulario (por ejemplo, credenciales incorrectas), anunciado al lector. */
+/** Error general de un formulario o de un paso (credenciales, cámara…), anunciado al lector. */
 export function FormError({ message }: { message: string | null }) {
   if (!message) return null;
   return (
