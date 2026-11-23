@@ -78,4 +78,10 @@ export {
   updateDoc,
   where,
 } from '@react-native-firebase/firestore';
-export { getMetadata, putFile, ref, setMaxUploadRetryTime } from '@react-native-firebase/storage';
+export {
+  getDownloadURL,
+  getMetadata,
+  putFile,
+  ref,
+  setMaxUploadRetryTime,
+} from '@react-native-firebase/storage';

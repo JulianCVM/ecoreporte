@@ -6,6 +6,7 @@ import {
   processUploadQueue,
   retried,
   withEntry,
+  withRetriedReport,
   withoutReport,
   type UploadEntry,
   type UploadOutcome,
@@ -109,6 +110,23 @@ describe('afterFailedAttempt', () => {
       nextAttemptAtMs: T0 + 5,
       lastError: null,
     });
+  });
+});
+
+describe('withRetriedReport', () => {
+  it('reinicia solo la entrada fallida del reporte pedido', () => {
+    const failed = { attempts: 8, state: 'failed' as const, lastError: 'sin conexión' };
+    const queue = [entry('a', failed), entry('b', failed)];
+
+    const [a, b] = withRetriedReport(queue, 'a', T0 + 9);
+
+    expect(a).toMatchObject({ state: 'pending', attempts: 0, nextAttemptAtMs: T0 + 9 });
+    expect(b).toEqual(queue[1]);
+  });
+
+  it('no adelanta una entrada que sigue esperando su reintento', () => {
+    const waiting = entry('a', { attempts: 3, nextAttemptAtMs: T0 + 60_000 });
+    expect(withRetriedReport([waiting], 'a', T0)).toEqual([waiting]);
   });
 });
 

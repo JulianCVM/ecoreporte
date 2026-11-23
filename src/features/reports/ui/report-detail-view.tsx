@@ -7,16 +7,19 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 import { useReport } from '../data/use-report';
+import { useUploadEntries } from '../data/use-upload-entries';
 import { statusPresentation } from '../domain/my-report';
 import { categoryLabel, complexityLabel } from '../domain/report-detail';
 import { formatCoordinates } from '../domain/report-location';
 import { formatDate } from './format-date';
+import { ReportPhoto } from './report-photo';
 import { ReportTimeline } from './report-timeline';
 
 /** Detalle de un reporte en vivo: estado, lo que dijo la IA, ubicación e historial (RF06). */
 export function ReportDetailView({ reportId }: { reportId: string }) {
   const theme = useTheme();
   const state = useReport(reportId);
+  const uploads = useUploadEntries();
 
   if (state.status === 'loading') {
     return <ActivityIndicator color={theme.primary} accessibilityLabel="Cargando el reporte" />;
@@ -32,6 +35,11 @@ export function ReportDetailView({ reportId }: { reportId: string }) {
   const status = statusPresentation(report.status);
   return (
     <>
+      <ReportPhoto
+        report={report}
+        entry={uploads.find((entry) => entry.reportId === report.id)}
+        variant="full"
+      />
       <ThemedView type="backgroundElement" style={styles.section}>
         <ThemedText type="smallBold" accessibilityLabel={`Estado: ${status.label}`}>
           {status.symbol} {status.label}

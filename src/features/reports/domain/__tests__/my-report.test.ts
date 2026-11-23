@@ -12,7 +12,16 @@ describe('parseMyReport', () => {
       status: 'pending_upload',
       capturedAtMs: 1_795_000_000_000,
       note: null,
+      photoPath: null,
     });
+  });
+
+  it('lee la ruta de la foto', () => {
+    const data = {
+      ...{ status: 'approved', capturedAt: timestamp(1) },
+      photo: { path: 'reports/u/r1.jpg' },
+    };
+    expect(parseMyReport('r1', data)?.photoPath).toBe('reports/u/r1.jpg');
   });
 
   it('conserva la nota', () => {
