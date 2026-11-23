@@ -103,6 +103,13 @@ Regla de veredicto (función pura `decideVerdict`, con pruebas):
 4. Si no → `rejected`.
 5. Si la IA falla después de `AI_MAX_ATTEMPTS`, está apagada o se alcanzó `AI_DAILY_LIMIT` → `needs_review`.
 
+**Clasificador** (`functions/src/ai/`, ADR 0003 y 0007): `createClassifier()` devuelve la implementación de `Classifier` que pide `AI_PROVIDER`.
+
+- `mock` elige una de cinco respuestas fijas por el hash de la foto: la misma foto siempre da lo mismo, sin red ni clave. Es el único proveedor de las pruebas y de la CI.
+- `gemini-api` y `vertex` comparten `GeminiClassifier` (`@google/genai`): mandan la foto, el prompt de `PROMPT_VERSION` y el esquema de respuesta, con temperatura 0 y corte a los `AI_TIMEOUT_MS`. `vertex` no se ha ejecutado: exige Blaze.
+- La respuesta se valida con el mismo esquema zod (`classification.ts`): `category`, `complexity`, `confidence` entre 0 y 1, `summary` de hasta `SUMMARY_MAX_CHARS` (200) y `containsPeople`. Una salida inválida, un corte por tiempo o un fallo del proveedor son un `ClassifierError`, es decir, un error técnico.
+- Los prompts viven en `prompt.ts`, uno por versión. Una versión publicada no se edita: se agrega otra. Una `PROMPT_VERSION` que no existe hace fallar la función al arrancar.
+
 ## Eventos de Analytics
 
 | Evento                  | Parámetros                                         |
