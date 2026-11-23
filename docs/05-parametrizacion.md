@@ -42,8 +42,11 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 | `NOTE_MAX_CHARS`              | 280              | —        | Igual a las reglas                                                     |
 | `UPLOAD_MAX_ATTEMPTS`         | 8                | 3–20     | Reintentos de la cola antes de pedir ayuda al usuario                  |
 | `UPLOAD_BACKOFF_BASE_MS`      | 2 000            | —        | Espera exponencial: 2 s, 4 s, 8 s… hasta 5 min                         |
+| `UPLOAD_ATTEMPT_TIMEOUT_MS`   | 30 000           | —        | Tope de un intento de subida; después falla y espera el reintento      |
 
 **Compresión de la foto** (`domain/photo-compression.ts`): la app prueba cuatro intentos en orden y se queda con el primero que pesa `PHOTO_MAX_BYTES` o menos. Baja la calidad antes que la resolución, porque la IA necesita el detalle: 1600 px a 0.7 → 1600 px a 0.5 → 1200 px a 0.5 → 800 px a 0.5. Si ninguno cabe, la app pide repetir la foto; nunca sube una que `storage.rules` rechazaría.
+
+**Cola de subida** (`domain/upload-queue.ts` y `data/upload-queue*.ts`, ADR 0004): al enviar, la foto se copia a `upload-queue/` en el almacenamiento de documentos de la app y su entrada se guarda en `upload-queue/queue.json`. La cola hace una pasada al abrir la app, al volver a primer plano, al volver la red, al encolar una foto y cuando vence la espera del reintento; sin red no gasta intentos. Tras `UPLOAD_MAX_ATTEMPTS` fallos la entrada queda en `failed` y espera al usuario. Si `storage.rules` niega la subida porque la foto ya estaba en Storage, la entrada cuenta como subida.
 
 **Geohash** (`src/lib/geo/geohash.ts`): `GEOHASH_PRECISION` = 9 caracteres (celdas de unos 5 m). Es el largo que exige `firestore.rules` y se calcula con `geofire-common`, la misma librería de las consultas por cercanía del mapa.
 

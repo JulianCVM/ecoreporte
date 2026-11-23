@@ -21,6 +21,9 @@ export const NOTE_MAX_CHARS = 280;
 export const UPLOAD_MAX_ATTEMPTS = 8;
 export const UPLOAD_BACKOFF_BASE_MS = 2_000;
 export const UPLOAD_BACKOFF_MAX_MS = 5 * 60_000;
+// Tope de un solo intento de subida. El SDK de Storage reintenta por dentro hasta 10 minutos:
+// con este tope el intento falla pronto y la espera la decide uploadBackoffMs().
+export const UPLOAD_ATTEMPT_TIMEOUT_MS = 30_000;
 
 export type AccuracyLevel = 'good' | 'acceptable' | 'too_low';
 
