@@ -10,6 +10,8 @@ const envSchema = z.object({
   EXPO_PUBLIC_USE_EMULATORS: z.stringbool().default(false),
   EXPO_PUBLIC_EMULATOR_HOST: z.string().min(1).default('10.0.2.2'),
   EXPO_PUBLIC_APP_CHECK_DEBUG_TOKEN: z.string().optional(),
+  // Estilo `liberty` de OpenFreeMap: teselas vectoriales sin clave ni registro (ADR 0008).
+  EXPO_PUBLIC_MAP_STYLE_URL: z.url().default('https://tiles.openfreemap.org/styles/liberty'),
 });
 
 export type AppEnv = {
@@ -17,6 +19,8 @@ export type AppEnv = {
   useEmulators: boolean;
   emulatorHost: string;
   appCheckDebugToken?: string;
+  /** URL del estilo de MapLibre. */
+  mapStyleUrl: string;
 };
 
 type RawEnv = Partial<Record<keyof z.input<typeof envSchema>, string | undefined>>;
@@ -43,6 +47,7 @@ export function parseEnv(raw: RawEnv): AppEnv {
     useEmulators: value.EXPO_PUBLIC_USE_EMULATORS,
     emulatorHost: value.EXPO_PUBLIC_EMULATOR_HOST,
     appCheckDebugToken: value.EXPO_PUBLIC_APP_CHECK_DEBUG_TOKEN,
+    mapStyleUrl: value.EXPO_PUBLIC_MAP_STYLE_URL,
   };
 }
 
@@ -51,4 +56,5 @@ export const appEnv: AppEnv = parseEnv({
   EXPO_PUBLIC_USE_EMULATORS: process.env.EXPO_PUBLIC_USE_EMULATORS,
   EXPO_PUBLIC_EMULATOR_HOST: process.env.EXPO_PUBLIC_EMULATOR_HOST,
   EXPO_PUBLIC_APP_CHECK_DEBUG_TOKEN: process.env.EXPO_PUBLIC_APP_CHECK_DEBUG_TOKEN,
+  EXPO_PUBLIC_MAP_STYLE_URL: process.env.EXPO_PUBLIC_MAP_STYLE_URL,
 });

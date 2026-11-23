@@ -34,6 +34,17 @@ export const Colors = {
   },
 } as const;
 
+/**
+ * Colores de los puntos del mapa por estado (RF05). Son iguales en claro y en oscuro porque van
+ * sobre las teselas, que no cambian con el tema; el borde blanco los separa del fondo.
+ */
+export const MapMarkerColors = {
+  approved: '#E65100',
+  in_progress: '#1565C0',
+  resolved: '#2E7D32',
+  stroke: '#FFFFFF',
+} as const;
+
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 export const Fonts = Platform.select({

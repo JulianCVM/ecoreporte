@@ -1,6 +1,6 @@
 # ADR 0008 · Mapa con MapLibre y teselas de OpenFreeMap
 
-- **Estado:** aceptada · 2026-11-18 (compatibilidad con Expo SDK 58 **[POR CONFIRMAR]** al integrarlo)
+- **Estado:** aceptada · 2026-11-18 (compatibilidad con Expo SDK 58 y React Native 0.88 **confirmada el 2026-11-23** con la versión 11.5.1 y su config plugin, en un development build de Android; iOS sin probar)
 
 ## Contexto
 

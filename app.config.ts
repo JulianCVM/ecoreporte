@@ -112,6 +112,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         motionUsagePermission: false,
       },
     ],
+    // Mapa sin clave ni facturación (ADR 0008). Trae código nativo.
+    '@maplibre/maplibre-react-native',
     [
       'expo-splash-screen',
       {
