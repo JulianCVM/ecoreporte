@@ -81,6 +81,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     '@react-native-firebase/app',
     '@react-native-firebase/auth',
+    // Aplica el plugin de Gradle que sube los símbolos y activa los reportes de fallos.
+    '@react-native-firebase/crashlytics',
     [
       'expo-build-properties',
       {

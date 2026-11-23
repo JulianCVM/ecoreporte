@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 
 import { FormError } from '@/components/form-error';
@@ -5,11 +6,13 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { trackEvent } from '@/lib/observability/analytics';
 
 import { useReport } from '../data/use-report';
 import { useUploadEntries } from '../data/use-upload-entries';
 import { statusPresentation } from '../domain/my-report';
 import { categoryLabel, complexityLabel } from '../domain/report-detail';
+import { hasVerdict } from '../domain/report-status';
 import { formatCoordinates } from '../domain/report-location';
 import { formatDate } from './format-date';
 import { ReportPhoto } from './report-photo';
@@ -20,6 +23,14 @@ export function ReportDetailView({ reportId }: { reportId: string }) {
   const theme = useTheme();
   const state = useReport(reportId);
   const uploads = useUploadEntries();
+
+  // Un evento por cada estado con veredicto que el usuario ve en esta pantalla.
+  const seenStatus = state.status === 'ready' ? state.report.status : null;
+  useEffect(() => {
+    if (seenStatus && hasVerdict(seenStatus)) {
+      trackEvent('report_verdict_seen', { status: seenStatus });
+    }
+  }, [seenStatus]);
 
   if (state.status === 'loading') {
     return <ActivityIndicator color={theme.primary} accessibilityLabel="Cargando el reporte" />;

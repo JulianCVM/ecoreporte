@@ -35,6 +35,11 @@ export function isPublic(status: ReportStatus): boolean {
   return PUBLIC_STATUSES.includes(status);
 }
 
+/** Estados en los que el autor ya puede ver un veredicto, de la IA o del operador. */
+export function hasVerdict(status: ReportStatus): boolean {
+  return status !== 'pending_upload' && status !== 'processing_ai' && status !== 'cancelled';
+}
+
 /** Estados finales: el reporte ya no cambia. */
 export function isFinal(status: ReportStatus): boolean {
   return status === 'resolved' || status === 'rejected' || status === 'cancelled';

@@ -1,6 +1,6 @@
 import { useForegroundPermissions } from 'expo-location';
 import { useIsFocused } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 
 import { FormError } from '@/components/form-error';
@@ -8,10 +8,17 @@ import { ThemedText } from '@/components/themed-text';
 import { useCurrentLocation } from '@/features/reports/data/use-current-location';
 import { permissionAccess } from '@/features/reports/domain/permission-access';
 import { useTheme } from '@/hooks/use-theme';
+import { trackEvent } from '@/lib/observability/analytics';
 
 import { useNearbyReports } from '../data/use-nearby-reports';
 import { MAP_FALLBACK_CENTER, MAP_RADIUS_M } from '../domain/limits';
-import { applyFilters, formatDistance, NO_FILTERS, type MapFilters } from '../domain/map-report';
+import {
+  applyFilters,
+  formatDistance,
+  METERS_PER_KM,
+  NO_FILTERS,
+  type MapFilters,
+} from '../domain/map-report';
 import { MapFiltersBar } from './map-filters';
 import { NearbyReportCard } from './nearby-report-card';
 import { ReportsMap } from './reports-map';
@@ -32,6 +39,10 @@ export function NearbyReports() {
   const waitingForLocation = hasLocation && !reading;
   const center = reading ?? MAP_FALLBACK_CENTER;
   const state = useNearbyReports(center);
+
+  useEffect(() => {
+    if (isFocused) trackEvent('map_opened', { radius_km: MAP_RADIUS_M / METERS_PER_KM });
+  }, [isFocused]);
 
   if (waitingForLocation || state.status === 'loading') {
     return <ActivityIndicator color={theme.primary} accessibilityLabel="Cargando el mapa" />;

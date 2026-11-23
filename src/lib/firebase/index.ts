@@ -6,8 +6,10 @@
  * instancia se conecta a la Emulator Suite si la configuración lo indica: Firestore exige que
  * eso pase antes de cualquier lectura o escritura.
  */
+import { getAnalytics } from '@react-native-firebase/analytics';
 import { getApp } from '@react-native-firebase/app';
 import { connectAuthEmulator, getAuth } from '@react-native-firebase/auth';
+import { getCrashlytics, setAttribute } from '@react-native-firebase/crashlytics';
 import { connectFirestoreEmulator, getFirestore } from '@react-native-firebase/firestore';
 import { connectFunctionsEmulator, getFunctions } from '@react-native-firebase/functions';
 import { getMessaging } from '@react-native-firebase/messaging';
@@ -26,9 +28,13 @@ let initialized = false;
 function ensureInitialized(): void {
   if (initialized) return;
   initialized = true;
+  const app = getApp();
+  // Así los errores de Crashlytics se pueden filtrar por entorno (docs/05 · EXPO_PUBLIC_ENV).
+  setAttribute(getCrashlytics(app), 'env', appEnv.env).catch((cause: unknown) => {
+    console.error('[firebase] no se pudo etiquetar el entorno en Crashlytics', cause);
+  });
   const targets = emulatorTargets(appEnv);
   if (!targets) return;
-  const app = getApp();
   connectAuthEmulator(getAuth(app), targets.authUrl);
   connectFirestoreEmulator(getFirestore(app), targets.host, targets.ports.firestore);
   connectStorageEmulator(getStorage(app), targets.host, targets.ports.storage);
@@ -47,6 +53,9 @@ export const auth = () => getAuth(firebaseApp());
 export const db = () => getFirestore(firebaseApp());
 export const storage = () => getStorage(firebaseApp());
 export const functions = () => getFunctions(firebaseApp(), FUNCTIONS_REGION);
+/** Crashlytics y Analytics no tienen emulador: van al proyecto de `google-services.json`. */
+export const crashlytics = () => getCrashlytics(firebaseApp());
+export const analytics = () => getAnalytics(firebaseApp());
 /** FCM no tiene emulador: siempre habla con el proyecto de `google-services.json`. */
 export const messaging = () => getMessaging(firebaseApp());
 
@@ -58,6 +67,8 @@ export const usingEmulators = (): boolean => emulatorTargets(appEnv) !== null;
 
 // Funciones modulares que usan las capas `data/` de las features. Se re-exportan desde aquí para
 // que este archivo siga siendo el único que importa el SDK; se agregan a medida que hacen falta.
+export { logEvent } from '@react-native-firebase/analytics';
+export { recordError } from '@react-native-firebase/crashlytics';
 export {
   createUserWithEmailAndPassword,
   getIdToken,

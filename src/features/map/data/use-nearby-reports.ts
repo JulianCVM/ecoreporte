@@ -12,6 +12,7 @@ import {
   startAt,
   where,
 } from '@/lib/firebase';
+import { reportError } from '@/lib/observability/errors';
 
 import { MAP_CENTER_DECIMALS, MAP_RADIUS_M, MAP_REPORTS_PER_RANGE_LIMIT } from '../domain/limits';
 import { MAP_STATUSES, parseMapReport, type MapReport } from '../domain/map-report';
@@ -76,7 +77,7 @@ export function useNearbyReports(center: Coordinates): NearbyReportsState {
           publish();
         },
         (cause) => {
-          console.error('[map] falló la consulta de reportes cercanos', cause);
+          reportError('[map] falló la consulta de reportes cercanos', cause);
           setState({ status: 'error', message: cause.message });
         },
       ),

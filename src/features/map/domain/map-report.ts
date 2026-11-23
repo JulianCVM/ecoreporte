@@ -79,7 +79,7 @@ export function toggled<T>(selected: readonly T[], value: T): T[] {
     : [...selected, value];
 }
 
-const METERS_PER_KM = 1000;
+export const METERS_PER_KM = 1000;
 
 /** «350 m» o «1,2 km», como se lee una distancia en Colombia. */
 export function formatDistance(distanceM: number): string {

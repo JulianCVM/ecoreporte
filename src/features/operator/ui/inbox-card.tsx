@@ -17,6 +17,7 @@ import { formatCoordinates } from '@/features/reports/domain/report-location';
 import type { ReportStatus } from '@/features/reports/domain/types';
 import { formatDate } from '@/features/reports/ui/format-date';
 import { ReportPhoto } from '@/features/reports/ui/report-photo';
+import { reportError } from '@/lib/observability/errors';
 
 import { operatorActions, type OperatorAction } from '../domain/operator-actions';
 
@@ -39,7 +40,7 @@ export function InboxCard({ report, onChangeStatus }: Props) {
     try {
       await onChangeStatus(report.id, report.status, action.to);
     } catch (cause) {
-      console.error(`[operator] no se pudo cambiar el estado de ${report.id}`, cause);
+      reportError(`[operator] no se pudo cambiar el estado de ${report.id}`, cause);
       setError(`No se pudo cambiar el estado: ${cause instanceof Error ? cause.message : cause}`);
     } finally {
       setBusy(null);

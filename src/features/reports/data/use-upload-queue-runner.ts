@@ -2,6 +2,8 @@ import { addNetworkStateListener, getNetworkStateAsync } from 'expo-network';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
+import { reportError } from '@/lib/observability/errors';
+
 import { onUploadQueueChange, runUploadQueue } from './upload-queue';
 
 /**
@@ -28,7 +30,7 @@ export function useUploadQueueRunner(authorUid: string | null): void {
         if (retryTimer) clearTimeout(retryTimer);
         retryTimer = setTimeout(run, Math.max(0, nextAttemptAtMs - Date.now()));
       } catch (cause) {
-        console.error('[upload-queue] falló la pasada por la cola', cause);
+        reportError('[upload-queue] falló la pasada por la cola', cause);
       }
     };
 

@@ -10,6 +10,7 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
 } from '@/lib/firebase';
+import { reportError } from '@/lib/observability/errors';
 
 import { authErrorCode, authErrorMessage, isKnownAuthError } from '../domain/auth-errors';
 import type { SignInInput, SignUpInput } from '../domain/credentials';
@@ -31,7 +32,7 @@ export class AuthActionError extends Error {
  */
 function toActionError(action: string, error: unknown): AuthActionError {
   if (!isKnownAuthError(error)) {
-    console.error(`[auth] ${action} falló con un error no esperado`, error);
+    reportError(`[auth] ${action} falló con un error no esperado`, error);
   }
   return new AuthActionError(authErrorMessage(error), authErrorCode(error));
 }

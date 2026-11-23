@@ -1,3 +1,4 @@
+import { getNetworkStateAsync } from 'expo-network';
 import { Link } from 'expo-router';
 import { useCallback, useState } from 'react';
 
@@ -5,6 +6,8 @@ import { FormError } from '@/components/form-error';
 import { PrimaryButton } from '@/components/primary-button';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
+import { trackEvent } from '@/lib/observability/analytics';
+import { reportError } from '@/lib/observability/errors';
 
 import { deletePhotoFile } from '../data/photo-compressor';
 import { submitReport } from '../data/report-repository';
@@ -37,7 +40,10 @@ export function ReportForm({ authorUid }: Props) {
   const handlePhotoChange = useCallback((photo: EncodedPhoto | null) => {
     setCaptured(photo ? { photo, capturedAtMs: Date.now() } : null);
     setError(null);
-    if (photo) setSaved(false);
+    if (photo) {
+      setSaved(false);
+      trackEvent('report_started');
+    }
   }, []);
 
   function handleSubmit() {
@@ -61,6 +67,17 @@ export function ReportForm({ authorUid }: Props) {
     } catch (cause) {
       console.warn(`No se pudo borrar la foto temporal ${captured.photo.uri}:`, cause);
     }
+    const accuracyM = Math.round(reading?.accuracyM ?? 0);
+    getNetworkStateAsync()
+      .then((network) => {
+        trackEvent('report_created', {
+          offline: network.isConnected === false,
+          accuracy_m: accuracyM,
+        });
+      })
+      .catch((cause: unknown) => {
+        reportError('[reports] no se pudo leer el estado de la red', cause);
+      });
     setCaptured(null);
     setNote('');
     setError(null);

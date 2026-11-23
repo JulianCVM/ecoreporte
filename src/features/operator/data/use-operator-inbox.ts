@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { parseReportDetail, type ReportDetail } from '@/features/reports/domain/report-detail';
 import { collection, db, limit, onSnapshot, orderBy, query, where } from '@/lib/firebase';
+import { reportError } from '@/lib/observability/errors';
 
 import { OPERATOR_INBOX_LIMIT } from '../domain/limits';
 import { INBOX_STATUSES } from '../domain/operator-actions';
@@ -31,13 +32,13 @@ export function useOperatorInbox(): OperatorInboxState {
         const reports = snapshot.docs.flatMap((document) => {
           const report = parseReportDetail(document.id, document.data());
           if (report) return [report];
-          console.error(`[operator] el reporte ${document.id} no tiene la forma esperada`);
+          reportError(`[operator] el reporte ${document.id} no tiene la forma esperada`);
           return [];
         });
         setState({ status: 'ready', reports });
       },
       (cause) => {
-        console.error('[operator] falló el listener de la bandeja', cause);
+        reportError('[operator] falló el listener de la bandeja', cause);
         setState({ status: 'error', message: cause.message });
       },
     );
