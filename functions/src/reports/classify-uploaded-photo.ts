@@ -1,5 +1,6 @@
 import { ClassifierError, type Classifier, type ClassifierOutput } from '../ai/classifier';
 import type { ServerConfig } from '../server-config';
+import { shouldAlert } from './alert';
 import type { AiResult, Evaluation, FinalOutcome, ReportStore } from './report-store';
 import { usageDay } from './usage-limits';
 import { decideVerdict, type ReviewReason } from './verdict';
@@ -15,6 +16,7 @@ export const REPORT_WAIT_MS = 1_000;
 type ClassifyConfig = Pick<
   ServerConfig,
   | 'aiEnabled'
+  | 'alertComplexity'
   | 'aiDailyLimit'
   | 'reportsPerUserPerDay'
   | 'aiMaxAttempts'
@@ -130,6 +132,7 @@ async function decideOutcome(
     status: 'needs_review',
     ai: null,
     reason,
+    alert: false,
   });
   const withinUserLimit = await store.countUserReport(
     authorUid,
@@ -141,7 +144,13 @@ async function decideOutcome(
 
   const result = await classifyWithRetries(reportId, photoPath, deps);
   if (typeof result === 'string') return review(result);
-  return { status: decideVerdict(result, config), ai: result, reason: null };
+  const status = decideVerdict(result, config);
+  return {
+    status,
+    ai: result,
+    reason: null,
+    alert: shouldAlert(status, result, config.alertComplexity),
+  };
 }
 
 /**
@@ -175,7 +184,7 @@ export async function classifyUploadedPhoto(
       // Falló algo fuera de la IA (un contador, una evaluación): el reporte no puede quedarse
       // colgado en processing_ai.
       console.error(`[classify] ${reportId}: falló la clasificación`, error);
-      return { status: 'needs_review', ai: null, reason: 'ai_failed' };
+      return { status: 'needs_review', ai: null, reason: 'ai_failed', alert: false };
     },
   );
 

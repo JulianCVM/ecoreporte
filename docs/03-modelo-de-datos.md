@@ -34,7 +34,7 @@ Un documento por intento (`classify-uploaded-photo.ts`): `{attempt, provider, mo
 
 ### `alerts/{alertId}`
 
-`{reportId, category, complexity, location, createdAt, status: open|acknowledged|closed, acknowledgedBy, acknowledgedAt}`. La crea la Function cuando `complexity == alta` y el veredicto no es `rejected`. Solo la leen y actualizan los operadores.
+`{reportId, category, complexity, location, createdAt, status: open|acknowledged|closed, acknowledgedBy, acknowledgedAt}`. El ID es el del reporte: un reporte tiene a lo sumo una alerta. La crea la Function en la misma transacción del veredicto, con `status: open`, cuando la complejidad llega a `ALERT_COMPLEXITY` y el veredicto no es `rejected` (`shouldAlert()` en `functions/src/reports/alert.ts`). `acknowledgedBy` y `acknowledgedAt` los pone el operador al atenderla. Solo la leen y actualizan los operadores.
 
 ### `users/{uid}`
 

@@ -15,6 +15,7 @@ const PHOTO_PATH = `reports/${UID}/${REPORT_ID}.jpg`;
 
 const config: ClassifyDeps['config'] = {
   aiEnabled: true,
+  alertComplexity: 'alta',
   aiDailyLimit: 200,
   reportsPerUserPerDay: 10,
   aiMaxAttempts: 2,
@@ -149,6 +150,7 @@ describe('classifyUploadedPhoto · veredicto', () => {
       {
         status: 'approved',
         reason: null,
+        alert: true,
         ai: {
           ...approved,
           model: 'modelo-de-prueba',
@@ -183,6 +185,35 @@ describe('classifyUploadedPhoto · veredicto', () => {
   });
 });
 
+describe('classifyUploadedPhoto · alerta por complejidad (RF03)', () => {
+  it('complejidad alta aprobada pide la alerta junto con el veredicto', async () => {
+    const { deps, state } = setup();
+    await classifyUploadedPhoto(PHOTO_PATH, deps);
+    expect(state.finished[0]).toMatchObject({ status: 'approved', alert: true });
+  });
+
+  it('complejidad baja no alerta', async () => {
+    const { deps, state } = setup({ script: [{ ...approved, complexity: 'baja' }] });
+    await classifyUploadedPhoto(PHOTO_PATH, deps);
+    expect(state.finished[0].alert).toBe(false);
+  });
+
+  it('un rechazado con complejidad alta no alerta', async () => {
+    const { deps, state } = setup({ script: [{ ...approved, category: 'sin_residuo' }] });
+    await classifyUploadedPhoto(PHOTO_PATH, deps);
+    expect(state.finished[0]).toMatchObject({ status: 'rejected', alert: false });
+  });
+
+  it('ALERT_COMPLEXITY=media baja el umbral de la alerta', async () => {
+    const { deps, state } = setup({
+      script: [{ ...approved, complexity: 'media' }],
+      config: { alertComplexity: 'media' },
+    });
+    await classifyUploadedPhoto(PHOTO_PATH, deps);
+    expect(state.finished[0].alert).toBe(true);
+  });
+});
+
 describe('classifyUploadedPhoto · fallos de la IA', () => {
   const invalid = new ClassifierError('no cumple el esquema', 'invalid_output', '{"x":1}');
 
@@ -209,7 +240,9 @@ describe('classifyUploadedPhoto · fallos de la IA', () => {
 
     expect(calls).toHaveLength(2); // AI_MAX_ATTEMPTS
     expect(result).toMatchObject({ status: 'needs_review' });
-    expect(state.finished).toEqual([{ status: 'needs_review', ai: null, reason: 'ai_failed' }]);
+    expect(state.finished).toEqual([
+      { status: 'needs_review', ai: null, reason: 'ai_failed', alert: false },
+    ]);
     expect(state.report?.status).toBe('needs_review');
   });
 
@@ -251,7 +284,9 @@ describe('classifyUploadedPhoto · fallos de la IA', () => {
 
     expect(calls).toHaveLength(0);
     expect(state.evaluations).toHaveLength(0);
-    expect(state.finished).toEqual([{ status: 'needs_review', ai: null, reason: 'ai_disabled' }]);
+    expect(state.finished).toEqual([
+      { status: 'needs_review', ai: null, reason: 'ai_disabled', alert: false },
+    ]);
   });
 });
 
@@ -276,7 +311,7 @@ describe('classifyUploadedPhoto · topes de uso (RNF05)', () => {
 
     expect(result).toMatchObject({ status: 'needs_review' });
     expect(state.finished).toEqual([
-      { status: 'needs_review', ai: null, reason: 'user_daily_limit' },
+      { status: 'needs_review', ai: null, reason: 'user_daily_limit', alert: false },
     ]);
     expect(calls).toHaveLength(0);
     expect(state.aiCounter).toBeUndefined();
@@ -307,7 +342,7 @@ describe('classifyUploadedPhoto · topes de uso (RNF05)', () => {
 
     expect(calls).toHaveLength(0);
     expect(state.finished).toEqual([
-      { status: 'needs_review', ai: null, reason: 'ai_daily_limit' },
+      { status: 'needs_review', ai: null, reason: 'ai_daily_limit', alert: false },
     ]);
     expect(state.aiCounter).toEqual({ date: TODAY, count: 5 });
   });

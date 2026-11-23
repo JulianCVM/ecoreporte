@@ -43,6 +43,8 @@ export type FinalOutcome = {
   ai: AiResult | null;
   /** Motivo de la revisión cuando no la decidió la IA; `null` en los demás casos. */
   reason: ReviewReason | null;
+  /** RF03: crear una alerta para los operadores junto con el veredicto. */
+  alert: boolean;
 };
 
 /**
@@ -72,6 +74,10 @@ export interface ReportStore {
    */
   reserveAiCall(day: string, limit: number): Promise<boolean>;
   saveEvaluation(reportId: string, evaluation: Evaluation): Promise<void>;
-  /** Escribe el veredicto: estado final del sistema, `ai` y el rastro en `statusHistory`. */
+  /**
+   * Escribe el veredicto: estado final del sistema, `ai` y el rastro en `statusHistory`. Si
+   * `outcome.alert`, crea en la misma transacción `alerts/{reportId}` con la categoría, la
+   * complejidad y la ubicación del reporte.
+   */
   finish(reportId: string, outcome: FinalOutcome, atMs: number): Promise<void>;
 }
