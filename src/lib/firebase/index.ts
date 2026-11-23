@@ -10,6 +10,7 @@ import { getApp } from '@react-native-firebase/app';
 import { connectAuthEmulator, getAuth } from '@react-native-firebase/auth';
 import { connectFirestoreEmulator, getFirestore } from '@react-native-firebase/firestore';
 import { connectFunctionsEmulator, getFunctions } from '@react-native-firebase/functions';
+import { getMessaging } from '@react-native-firebase/messaging';
 import { connectStorageEmulator, getStorage } from '@react-native-firebase/storage';
 
 import { appEnv } from '@/lib/config/env';
@@ -46,6 +47,8 @@ export const auth = () => getAuth(firebaseApp());
 export const db = () => getFirestore(firebaseApp());
 export const storage = () => getStorage(firebaseApp());
 export const functions = () => getFunctions(firebaseApp(), FUNCTIONS_REGION);
+/** FCM no tiene emulador: siempre habla con el proyecto de `google-services.json`. */
+export const messaging = () => getMessaging(firebaseApp());
 
 /** ID del proyecto de Firebase al que apunta el build (lo muestra la pantalla Perfil). */
 export const firebaseProjectId = (): string => getApp().options.projectId ?? 'desconocido';
@@ -71,6 +74,7 @@ export {
   doc,
   endAt,
   GeoPoint,
+  getDoc,
   limit,
   onSnapshot,
   orderBy,
@@ -82,6 +86,16 @@ export {
   updateDoc,
   where,
 } from '@react-native-firebase/firestore';
+export {
+  AuthorizationStatus,
+  getInitialNotification,
+  getToken,
+  onNotificationOpenedApp,
+  onTokenRefresh,
+  requestPermission,
+  subscribeToTopic,
+  unsubscribeFromTopic,
+} from '@react-native-firebase/messaging';
 export {
   getDownloadURL,
   getMetadata,

@@ -69,6 +69,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
     predictiveBackGestureEnabled: false,
+    // Android 13+: sin este permiso declarado no se puede pedir el de notificaciones (RF08).
+    permissions: ['android.permission.POST_NOTIFICATIONS'],
     googleServicesFile,
   },
   web: {
