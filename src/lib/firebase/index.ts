@@ -58,6 +58,7 @@ export const usingEmulators = (): boolean => emulatorTargets(appEnv) !== null;
 export {
   createUserWithEmailAndPassword,
   getIdToken,
+  getIdTokenResult,
   onIdTokenChanged,
   signInWithEmailAndPassword,
   signOut,
@@ -65,6 +66,7 @@ export {
   type User,
 } from '@react-native-firebase/auth';
 export {
+  arrayUnion,
   collection,
   doc,
   GeoPoint,

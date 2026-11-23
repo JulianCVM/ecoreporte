@@ -126,10 +126,10 @@ const REVIEW_REASONS: Record<string, string> = {
   ai_failed: 'El análisis automático no respondió.',
   ai_disabled: 'El análisis automático está en pausa.',
   ai_daily_limit: 'Se alcanzó el cupo diario del análisis automático.',
-  user_daily_limit: 'Superaste el número de reportes diarios que se analizan solos.',
+  user_daily_limit: 'Se superó el número de reportes diarios que se analizan solos.',
 };
 
-/** El motivo de una revisión, en palabras para el ciudadano. */
+/** El motivo de una revisión, en palabras que sirven al ciudadano y al operador. */
 export function reviewReasonText(reason: string): string {
   return REVIEW_REASONS[reason] ?? 'No se pudo analizar automáticamente.';
 }
