@@ -70,6 +70,7 @@
     "web": "expo start --web",
     "emulators": "npm --prefix functions run build && firebase emulators:start --project dev --only auth,firestore,storage,functions --import=.emulator-data --export-on-exit",
     "emulators:rol": "node scripts/asignar-rol.js",
+    "emulators:demo": "node scripts/sembrar-demo.js",
     "emulators:limpio": "npm --prefix functions run build && firebase emulators:start --project dev --only auth,firestore,storage,functions",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
