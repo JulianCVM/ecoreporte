@@ -1,5 +1,10 @@
 import { LOCATION_GOOD_ACCURACY_M, LOCATION_MAX_ACCURACY_M } from '../limits';
-import { accuracyStatus, canSubmitLocation, formatAccuracy } from '../report-location';
+import {
+  accuracyStatus,
+  canSubmitLocation,
+  formatAccuracy,
+  formatCoordinates,
+} from '../report-location';
 
 const reading = (accuracyM: number | null) => ({
   latitude: 7.11935,
@@ -51,5 +56,11 @@ describe('formatAccuracy', () => {
     [-1, 'sin dato'],
   ])('%p → %s', (accuracyM, expected) => {
     expect(formatAccuracy(accuracyM)).toBe(expected);
+  });
+});
+
+describe('formatCoordinates', () => {
+  it('muestra latitud y longitud con cinco decimales', () => {
+    expect(formatCoordinates(7.1193483, -73.1227383)).toBe('7.11935, -73.12274');
   });
 });

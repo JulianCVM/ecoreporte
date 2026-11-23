@@ -21,6 +21,8 @@ El ID lo genera la app (`doc().id`) para poder crear el reporte sin conexión y 
 | `statusHistory`     | array ≤ 20 de `{status, by, at}`   | Function y operador                                                     | Rastro de cambios. La Function firma con `by: system` y agrega `reason` (`ai_failed` · `ai_disabled`) cuando manda a revisión sin veredicto de la IA |
 | `updatedAt`         | timestamp                          | Todos                                                                   |                                                                                                                                                      |
 
+`statusHistory` no guarda la creación ni la cancelación del autor (las reglas solo dejan al autor cambiar `status`). El detalle del reporte arma el historial con `reportTimeline()` (`src/features/reports/domain/report-detail.ts`): pone la captura al inicio y, si el estado actual no quedó en el rastro, lo agrega sin hora.
+
 Valores cerrados:
 
 - `category`: `via_publica` · `domiciliario_ilegal` · `escombros` · `sin_residuo`

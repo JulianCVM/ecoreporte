@@ -1,0 +1,74 @@
+import { ActivityIndicator, StyleSheet } from 'react-native';
+
+import { FormError } from '@/components/form-error';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+
+import { useReport } from '../data/use-report';
+import { statusPresentation } from '../domain/my-report';
+import { categoryLabel, complexityLabel } from '../domain/report-detail';
+import { formatCoordinates } from '../domain/report-location';
+import { formatDate } from './format-date';
+import { ReportTimeline } from './report-timeline';
+
+/** Detalle de un reporte en vivo: estado, lo que dijo la IA, ubicación e historial (RF06). */
+export function ReportDetailView({ reportId }: { reportId: string }) {
+  const theme = useTheme();
+  const state = useReport(reportId);
+
+  if (state.status === 'loading') {
+    return <ActivityIndicator color={theme.primary} accessibilityLabel="Cargando el reporte" />;
+  }
+  if (state.status === 'error') {
+    return <FormError message={`No se pudo cargar el reporte: ${state.message}`} />;
+  }
+  if (state.status === 'missing') {
+    return <FormError message="Este reporte ya no existe o no se puede leer." />;
+  }
+
+  const { report } = state;
+  const status = statusPresentation(report.status);
+  return (
+    <>
+      <ThemedView type="backgroundElement" style={styles.section}>
+        <ThemedText type="smallBold" accessibilityLabel={`Estado: ${status.label}`}>
+          {status.symbol} {status.label}
+        </ThemedText>
+        <ThemedText type="small">{status.description}</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Tomado el {formatDate(report.capturedAtMs)}
+        </ThemedText>
+        {report.latitude != null && report.longitude != null ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            Ubicación: {formatCoordinates(report.latitude, report.longitude)}
+          </ThemedText>
+        ) : null}
+        {report.note ? <ThemedText type="small">«{report.note}»</ThemedText> : null}
+      </ThemedView>
+
+      {report.ai ? (
+        <ThemedView type="backgroundElement" style={styles.section}>
+          <ThemedText type="smallBold" accessibilityRole="header">
+            Análisis automático
+          </ThemedText>
+          <ThemedText type="small">{report.ai.summary}</ThemedText>
+          <ThemedText type="small">Tipo: {categoryLabel(report.ai.category)}</ThemedText>
+          <ThemedText type="small">Complejidad: {complexityLabel(report.ai.complexity)}</ThemedText>
+        </ThemedView>
+      ) : null}
+
+      <ThemedView type="backgroundElement" style={styles.section}>
+        <ThemedText type="smallBold" accessibilityRole="header">
+          Historial
+        </ThemedText>
+        <ReportTimeline steps={report.timeline} />
+      </ThemedView>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  section: { gap: Spacing.one, padding: Spacing.three, borderRadius: Spacing.three },
+});

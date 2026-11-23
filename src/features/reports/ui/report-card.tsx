@@ -7,17 +7,17 @@ import { Spacing } from '@/constants/theme';
 
 import { statusPresentation, type MyReport } from '../domain/my-report';
 import { canTransition } from '../domain/report-status';
+import { formatDate } from './format-date';
 
 type Props = {
   report: MyReport;
   onCancel: (reportId: string) => void;
+  /** Abre el detalle del reporte. */
+  onOpen: (reportId: string) => void;
 };
 
-const formatDate = (ms: number) =>
-  new Date(ms).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
-
-/** Un reporte en «Mis reportes»: estado con símbolo y texto, fecha, nota y cancelación. */
-export function ReportCard({ report, onCancel }: Props) {
+/** Un reporte en «Mis reportes»: estado con símbolo y texto, fecha, nota, detalle y cancelación. */
+export function ReportCard({ report, onCancel, onOpen }: Props) {
   const status = statusPresentation(report.status);
   const date = formatDate(report.capturedAtMs);
 
@@ -38,6 +38,11 @@ export function ReportCard({ report, onCancel }: Props) {
       </ThemedText>
       <ThemedText type="small">{status.description}</ThemedText>
       {report.note ? <ThemedText type="small">«{report.note}»</ThemedText> : null}
+      <PrimaryButton
+        label="Ver detalle e historial"
+        variant="secondary"
+        onPress={() => onOpen(report.id)}
+      />
       {canTransition('author', report.status, 'cancelled') ? (
         <PrimaryButton label="Cancelar el reporte" variant="secondary" onPress={confirmCancel} />
       ) : null}

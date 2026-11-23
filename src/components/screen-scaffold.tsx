@@ -11,13 +11,18 @@ type Props = {
   description?: string;
   /** Requisitos que la pantalla todavía no cumple (se borran al implementarlos). */
   pending?: readonly string[];
+  /** La pantalla va debajo de un encabezado nativo, que ya deja libre la barra de estado. */
+  hasHeader?: boolean;
   children?: ReactNode;
 };
 
-export function ScreenScaffold({ title, description, pending, children }: Props) {
+// Con encabezado nativo, sumar el borde de arriba deja un hueco del alto de la barra de estado.
+const EDGES_UNDER_HEADER = ['left', 'right', 'bottom'] as const;
+
+export function ScreenScaffold({ title, description, pending, hasHeader, children }: Props) {
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={hasHeader ? EDGES_UNDER_HEADER : undefined}>
         <ScrollView contentContainerStyle={styles.content}>
           <ThemedText type="title" accessibilityRole="header">
             {title}
