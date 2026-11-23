@@ -42,6 +42,7 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 | `NOTE_MAX_CHARS`              | 280                | —          | Igual a las reglas                                                     |
 | `MY_REPORTS_LIMIT`            | 50                 | 10–200     | Reportes que trae «Mis reportes», los más recientes primero            |
 | `OPERATOR_INBOX_LIMIT`        | 50                 | 10–200     | Reportes que trae la bandeja del operador (`features/operator`)        |
+| `OPERATOR_ALERTS_LIMIT`       | 20                 | 5–100      | Alertas abiertas o atendidas que trae la bandeja del operador          |
 | `MAP_RADIUS_M`                | 3 000              | 500–10 000 | Radio de la búsqueda del mapa alrededor del usuario (`features/map`)   |
 | `MAP_REPORTS_PER_RANGE_LIMIT` | 50                 | 10–200     | Tope de reportes por cada rango de geohash de la consulta del mapa     |
 | `MAP_INITIAL_ZOOM`            | 13                 | —          | Zoom con el que el radio de búsqueda cabe en la pantalla               |

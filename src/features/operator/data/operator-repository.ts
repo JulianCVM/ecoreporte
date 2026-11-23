@@ -1,5 +1,7 @@
 import { canTransition } from '@/features/reports/domain/report-status';
 import type { ReportStatus } from '@/features/reports/domain/types';
+import { nextAlertStep, type AlertStatus } from '../domain/operator-alert';
+
 import { arrayUnion, db, doc, serverTimestamp, Timestamp, updateDoc } from '@/lib/firebase';
 
 /**
@@ -22,5 +24,25 @@ export async function changeReportStatus(
     // `arrayUnion` no acepta `serverTimestamp()` dentro de un elemento: va la hora del teléfono.
     statusHistory: arrayUnion({ status: to, by: 'operator', at: Timestamp.now() }),
     updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Avanza una alerta (atendida o cerrada) y deja quién lo hizo y cuándo (RF03). Las reglas de
+ * Firestore exigen que `acknowledgedBy` sea quien tiene la sesión.
+ *
+ * @throws Error si la alerta ya está cerrada o si el servidor rechaza el cambio.
+ */
+export async function advanceAlert(
+  alertId: string,
+  from: AlertStatus,
+  operatorUid: string,
+): Promise<void> {
+  const step = nextAlertStep(from);
+  if (!step) throw new Error(`La alerta ${alertId} ya está cerrada`);
+  await updateDoc(doc(db(), 'alerts', alertId), {
+    status: step.to,
+    acknowledgedBy: operatorUid,
+    acknowledgedAt: serverTimestamp(),
   });
 }

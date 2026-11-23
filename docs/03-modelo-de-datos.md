@@ -38,6 +38,8 @@ Un documento por intento (`classify-uploaded-photo.ts`): `{attempt, provider, mo
 
 `{reportId, category, complexity, location, createdAt, status: open|acknowledged|closed, acknowledgedBy, acknowledgedAt}`. La crea la Function cuando `complexity == alta` y el veredicto no es `rejected`. Solo la leen y actualizan los operadores.
 
+El operador la atiende desde la bandeja (`src/features/operator/`): la alerta solo avanza `open → acknowledged → closed`, y cada paso deja `acknowledgedBy` (su `uid`) y `acknowledgedAt` (hora del servidor).
+
 ### `users/{uid}`
 
 `{displayName, createdAt, reportsToday: {date, count}, fcmTokens: [≤ 5]}`. El usuario lee y edita su documento salvo `reportsToday`, que es de la Function. **El rol no va aquí:** va en los custom claims del token (`role`).
