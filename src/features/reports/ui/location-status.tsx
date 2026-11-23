@@ -1,8 +1,5 @@
-import { StyleSheet } from 'react-native';
-
+import { Card } from '@/components/card';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
 
 import {
   accuracyStatus,
@@ -18,7 +15,7 @@ export function LocationStatus({ reading }: { reading: LocationReading }) {
   const summary = `${status.label}, ${formatAccuracy(reading.accuracyM)}`;
 
   return (
-    <ThemedView type="backgroundElement" style={styles.card}>
+    <Card>
       <ThemedText
         type="smallBold"
         themeColor={tooLow ? 'danger' : 'text'}
@@ -30,10 +27,6 @@ export function LocationStatus({ reading }: { reading: LocationReading }) {
         {formatCoordinates(reading.latitude, reading.longitude)}
       </ThemedText>
       {status.hint ? <ThemedText type="small">{status.hint}</ThemedText> : null}
-    </ThemedView>
+    </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  card: { gap: Spacing.one, padding: Spacing.three, borderRadius: Spacing.three },
-});

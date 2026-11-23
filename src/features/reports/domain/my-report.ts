@@ -53,6 +53,8 @@ export type StatusPresentation = {
   label: string;
   /** Qué significa el estado para el ciudadano. */
   description: string;
+  /** Color de apoyo de la insignia; acompaña al símbolo y al texto, nunca los reemplaza. */
+  tone: 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 };
 
 const PRESENTATIONS: Record<ReportStatus, StatusPresentation> = {
@@ -60,34 +62,50 @@ const PRESENTATIONS: Record<ReportStatus, StatusPresentation> = {
     symbol: '⏳',
     label: 'Pendiente de subir',
     description: 'Guardado en el teléfono. La foto sube sola cuando hay conexión.',
+    tone: 'neutral',
   },
   processing_ai: {
     symbol: '◔',
     label: 'En análisis',
     description: 'La foto llegó y se está clasificando.',
+    tone: 'info',
   },
   needs_review: {
     symbol: '◑',
     label: 'En revisión',
     description: 'Una persona de la entidad de aseo va a revisarlo.',
+    tone: 'warning',
   },
   approved: {
     symbol: '✓',
     label: 'Aprobado',
     description: 'Ya aparece en el mapa y espera atención.',
+    tone: 'warning',
   },
   in_progress: {
     symbol: '▶',
     label: 'En atención',
     description: 'La entidad de aseo está atendiéndolo.',
+    tone: 'info',
   },
-  resolved: { symbol: '✓✓', label: 'Resuelto', description: 'Los residuos fueron recogidos.' },
+  resolved: {
+    symbol: '✓✓',
+    label: 'Resuelto',
+    description: 'Los residuos fueron recogidos.',
+    tone: 'success',
+  },
   rejected: {
     symbol: '✕',
     label: 'Rechazado',
     description: 'La foto no mostraba residuos en la vía pública.',
+    tone: 'danger',
   },
-  cancelled: { symbol: '⊘', label: 'Cancelado', description: 'Lo cancelaste antes de subirlo.' },
+  cancelled: {
+    symbol: '⊘',
+    label: 'Cancelado',
+    description: 'Lo cancelaste antes de subirlo.',
+    tone: 'neutral',
+  },
 };
 
 /** Símbolo, nombre y explicación de un estado, en palabras para el ciudadano. */

@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
 
+import { Card } from '@/components/card';
 import { FormError } from '@/components/form-error';
 import { PrimaryButton } from '@/components/primary-button';
+import { StatusBadge } from '@/components/status-badge';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
 import { categoryLabel, complexityLabel } from '@/features/reports/domain/report-detail';
 import { formatCoordinates } from '@/features/reports/domain/report-location';
 import { formatDate } from '@/features/reports/ui/format-date';
@@ -47,10 +46,8 @@ export function AlertCard({ alert, onAdvance, onOpenReport }: Props) {
   }
 
   return (
-    <ThemedView type="backgroundElement" style={styles.card}>
-      <ThemedText type="smallBold" accessibilityLabel={`${status.label}`}>
-        {status.symbol} {status.label}
-      </ThemedText>
+    <Card>
+      <StatusBadge symbol={status.symbol} label={status.label} tone={status.tone} />
       <ThemedText type="small">{categoryLabel(alert.category)}</ThemedText>
       <ThemedText type="small">Complejidad: {complexityLabel(alert.complexity)}</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
@@ -66,10 +63,6 @@ export function AlertCard({ alert, onAdvance, onOpenReport }: Props) {
         variant="secondary"
         onPress={() => onOpenReport(alert.reportId)}
       />
-    </ThemedView>
+    </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  card: { gap: Spacing.one, padding: Spacing.three, borderRadius: Spacing.three },
-});

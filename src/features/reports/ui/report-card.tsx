@@ -1,8 +1,9 @@
 import { Alert, StyleSheet, View } from 'react-native';
 
+import { Card } from '@/components/card';
 import { PrimaryButton } from '@/components/primary-button';
+import { StatusBadge } from '@/components/status-badge';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 
 import { statusPresentation, type MyReport } from '../domain/my-report';
@@ -36,13 +37,16 @@ export function ReportCard({ report, uploadEntry, onCancel, onOpen, onRetryUploa
   }
 
   return (
-    <ThemedView type="backgroundElement" style={styles.card}>
+    <Card>
       <View style={styles.summary}>
         <ReportPhoto report={report} entry={uploadEntry} variant="thumbnail" />
         <View style={styles.texts}>
-          <ThemedText type="smallBold" accessibilityLabel={`Estado: ${status.label}. ${date}`}>
-            {status.symbol} {status.label}
-          </ThemedText>
+          <StatusBadge
+            symbol={status.symbol}
+            label={status.label}
+            tone={status.tone}
+            accessibilityLabel={`Estado: ${status.label}. ${date}`}
+          />
           <ThemedText type="small" themeColor="textSecondary">
             {date}
           </ThemedText>
@@ -65,14 +69,13 @@ export function ReportCard({ report, uploadEntry, onCancel, onOpen, onRetryUploa
         onPress={() => onOpen(report.id)}
       />
       {canTransition('author', report.status, 'cancelled') ? (
-        <PrimaryButton label="Cancelar el reporte" variant="secondary" onPress={confirmCancel} />
+        <PrimaryButton label="Cancelar el reporte" variant="danger" onPress={confirmCancel} />
       ) : null}
-    </ThemedView>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { gap: Spacing.one, padding: Spacing.three, borderRadius: Spacing.three },
   summary: { flexDirection: 'row', gap: Spacing.three },
   texts: { flex: 1, gap: Spacing.one },
 });

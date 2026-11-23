@@ -9,30 +9,72 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: '#111A14',
+    // Fondo con un toque de verde: las tarjetas blancas se separan sin necesidad de sombras.
+    background: '#F4F7F4',
+    backgroundElement: '#FFFFFF',
+    backgroundSelected: '#E4ECE6',
+    border: '#D5DDD7',
+    // 6,0:1 sobre el fondo y 6,5:1 sobre las tarjetas (WCAG AA).
+    textSecondary: '#55615A',
     // Verde de acción; contraste 5,3:1 con onPrimary (WCAG AA para texto normal).
     primary: '#1E7A4C',
-    onPrimary: '#ffffff',
+    onPrimary: '#FFFFFF',
+    // Verde suave de lo seleccionado; su texto da 7,6:1.
+    primarySoft: '#DCEFE4',
+    onPrimarySoft: '#14532D',
     // Rojo de error; 5,6:1 sobre el fondo claro.
     danger: '#C62828',
+    // Tonos de las insignias de estado: fondo suave y texto con contraste de 6,9:1 o más.
+    successBg: '#DCEFE4',
+    successText: '#14532D',
+    warningBg: '#FBE9C6',
+    warningText: '#6B4000',
+    dangerBg: '#FADADA',
+    dangerText: '#8E1B1B',
+    infoBg: '#DCE8FA',
+    infoText: '#123F7A',
+    neutralBg: '#E4ECE6',
+    neutralText: '#35423A',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-    // En oscuro el verde se aclara y el texto encima pasa a negro: 10,4:1.
+    text: '#F2F5F3',
+    background: '#0E1411',
+    backgroundElement: '#18201B',
+    backgroundSelected: '#26322A',
+    border: '#2E3A32',
+    // 8,8:1 sobre el fondo oscuro y 7,8:1 sobre las tarjetas.
+    textSecondary: '#A9B5AD',
+    // En oscuro el verde se aclara y el texto encima pasa a casi negro: 8,5:1.
     primary: '#5FCB8F',
-    onPrimary: '#000000',
-    // 9,2:1 sobre el fondo oscuro.
+    onPrimary: '#06210F',
+    primarySoft: '#17382A',
+    onPrimarySoft: '#A6E8C4',
+    // 8,2:1 sobre el fondo oscuro.
     danger: '#FF8A80',
+    successBg: '#17382A',
+    successText: '#A6E8C4',
+    warningBg: '#3D2F0E',
+    warningText: '#F5CF7A',
+    dangerBg: '#44191A',
+    dangerText: '#FFB4AC',
+    infoBg: '#16294A',
+    infoText: '#A9C8FA',
+    neutralBg: '#26322A',
+    neutralText: '#C9D3CC',
   },
 } as const;
+
+/** Tono de una insignia o de un aviso. Siempre acompaña a un símbolo y a un texto (RNF06). */
+export type Tone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
+
+/** Colores de fondo y de texto de un tono en el tema dado. */
+export function toneColors(
+  theme: (typeof Colors)['light'] | (typeof Colors)['dark'],
+  tone: Tone,
+): { background: string; text: string } {
+  return { background: theme[`${tone}Bg`], text: theme[`${tone}Text`] };
+}
 
 /**
  * Colores de los puntos del mapa por estado (RF05). Son iguales en claro y en oscuro porque van
@@ -81,6 +123,9 @@ export const Spacing = {
   five: 32,
   six: 64,
 } as const;
+
+/** Radios de las esquinas: controles, tarjetas y píldoras. */
+export const Radius = { control: 12, card: 16, pill: 999 } as const;
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;

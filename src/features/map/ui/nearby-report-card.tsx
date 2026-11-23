@@ -1,8 +1,9 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { Card } from '@/components/card';
 import { PrimaryButton } from '@/components/primary-button';
+import { StatusBadge } from '@/components/status-badge';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { statusPresentation } from '@/features/reports/domain/my-report';
 
@@ -21,10 +22,18 @@ type Props = {
 export function NearbyReportCard({ report, selected, onSelect }: Props) {
   const status = statusPresentation(report.status);
   return (
-    <ThemedView type={selected ? 'backgroundSelected' : 'backgroundElement'} style={styles.card}>
-      <ThemedText type="smallBold" accessibilityLabel={`Estado: ${status.label}`}>
-        {status.symbol} {status.label} · a {formatDistance(report.distanceM)}
-      </ThemedText>
+    <Card selected={selected}>
+      <View style={styles.header}>
+        <StatusBadge
+          symbol={status.symbol}
+          label={status.label}
+          tone={status.tone}
+          accessibilityLabel={`Estado: ${status.label}`}
+        />
+        <ThemedText type="small" themeColor="textSecondary">
+          a {formatDistance(report.distanceM)}
+        </ThemedText>
+      </View>
       <ThemedText type="small">{report.summary}</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         {CATEGORY_NAMES[report.category]} · complejidad {COMPLEXITY_NAMES[report.complexity]}
@@ -38,10 +47,10 @@ export function NearbyReportCard({ report, selected, onSelect }: Props) {
           onPress={() => onSelect(report.id)}
         />
       )}
-    </ThemedView>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { gap: Spacing.one, padding: Spacing.three, borderRadius: Spacing.three },
+  header: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
 });

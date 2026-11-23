@@ -15,8 +15,10 @@ export default function AppTabs({ showOperatorInbox }: Props) {
   return (
     <NativeTabs
       backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
+      indicatorColor={colors.primarySoft}
+      rippleColor={colors.backgroundSelected}
+      iconColor={{ default: colors.textSecondary, selected: colors.onPrimarySoft }}
+      labelStyle={{ default: { color: colors.textSecondary }, selected: { color: colors.text } }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Reportar</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="camera" md="photo_camera" />
