@@ -1,8 +1,11 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 
 import { useSession } from '@/features/auth/data/use-session';
+import { isStaff } from '@/features/auth/domain/role';
+import { usePushNavigation } from '@/features/notifications/data/use-push-navigation';
+import { usePushRegistration } from '@/features/notifications/data/use-push-registration';
 
 // Con sesión, la guarda de (auth) vuelve al ancla: las pestañas.
 export const unstable_settings = { anchor: '(tabs)' };
@@ -10,6 +13,16 @@ export const unstable_settings = { anchor: '(tabs)' };
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const session = useSession();
+  const router = useRouter();
+  const user = session.status === 'signed-in' ? session.user : null;
+  usePushRegistration(user?.uid ?? null, user ? isStaff(user.role) : false);
+  usePushNavigation(user !== null, (target) => {
+    if (target.screen === 'report') {
+      router.push({ pathname: '/reporte/[id]', params: { id: target.reportId } });
+    } else {
+      router.push('/operador');
+    }
+  });
   // Mientras el SDK restaura la sesión guardada no se decide la ruta: así quien ya entró no ve
   // por un instante el inicio de sesión. La pantalla de arranque sigue visible.
   if (session.status === 'loading') return null;

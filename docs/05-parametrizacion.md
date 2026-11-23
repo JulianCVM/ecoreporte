@@ -29,27 +29,28 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 
 ## Constantes del dominio en el cliente (`src/features/reports/domain/limits.ts`)
 
-| Constante                     | Por defecto        | Rango      | Por qué                                                                |
-| ----------------------------- | ------------------ | ---------- | ---------------------------------------------------------------------- |
-| `PHOTO_MAX_EDGE_PX`           | 1600               | 800–2400   | Detalle suficiente para la IA sin pasar de 2 MB                        |
-| `PHOTO_JPEG_QUALITY`          | 0.7                | 0.5–0.9    | Tamaño frente a calidad                                                |
-| `PHOTO_MAX_BYTES`             | 2 097 152 (2 MB)   | —          | Igual al límite de `storage.rules`                                     |
-| `PHOTO_MIN_EDGE_PX`           | 800                | —          | Piso del lado mayor si la foto no cabe en 2 MB                         |
-| `PHOTO_MIN_JPEG_QUALITY`      | 0.5                | —          | Piso de la calidad si la foto no cabe en 2 MB                          |
-| `LOCATION_MAX_ACCURACY_M`     | 50                 | 10–100     | Por encima, la app no deja enviar                                      |
-| `LOCATION_GOOD_ACCURACY_M`    | 10                 | —          | Meta del documento original; la app la muestra como «buena»            |
-| `LOCATION_UPDATE_INTERVAL_MS` | 2 000              | —          | Cada cuánto llega una lectura del GPS con la pantalla Reportar abierta |
-| `NOTE_MAX_CHARS`              | 280                | —          | Igual a las reglas                                                     |
-| `MY_REPORTS_LIMIT`            | 50                 | 10–200     | Reportes que trae «Mis reportes», los más recientes primero            |
-| `OPERATOR_INBOX_LIMIT`        | 50                 | 10–200     | Reportes que trae la bandeja del operador (`features/operator`)        |
-| `OPERATOR_ALERTS_LIMIT`       | 20                 | 5–100      | Alertas abiertas o atendidas que trae la bandeja del operador          |
-| `MAP_RADIUS_M`                | 3 000              | 500–10 000 | Radio de la búsqueda del mapa alrededor del usuario (`features/map`)   |
-| `MAP_REPORTS_PER_RANGE_LIMIT` | 50                 | 10–200     | Tope de reportes por cada rango de geohash de la consulta del mapa     |
-| `MAP_INITIAL_ZOOM`            | 13                 | —          | Zoom con el que el radio de búsqueda cabe en la pantalla               |
-| `MAP_FALLBACK_CENTER`         | 7.11935, -73.12274 | —          | Centro de Bucaramanga: donde abre el mapa sin permiso de ubicación     |
-| `UPLOAD_MAX_ATTEMPTS`         | 8                  | 3–20       | Reintentos de la cola antes de pedir ayuda al usuario                  |
-| `UPLOAD_BACKOFF_BASE_MS`      | 2 000              | —          | Espera exponencial: 2 s, 4 s, 8 s… hasta 5 min                         |
-| `UPLOAD_ATTEMPT_TIMEOUT_MS`   | 30 000             | —          | Tope de un intento de subida; después falla y espera el reintento      |
+| Constante                     | Por defecto        | Rango      | Por qué                                                                              |
+| ----------------------------- | ------------------ | ---------- | ------------------------------------------------------------------------------------ |
+| `PHOTO_MAX_EDGE_PX`           | 1600               | 800–2400   | Detalle suficiente para la IA sin pasar de 2 MB                                      |
+| `PHOTO_JPEG_QUALITY`          | 0.7                | 0.5–0.9    | Tamaño frente a calidad                                                              |
+| `PHOTO_MAX_BYTES`             | 2 097 152 (2 MB)   | —          | Igual al límite de `storage.rules`                                                   |
+| `PHOTO_MIN_EDGE_PX`           | 800                | —          | Piso del lado mayor si la foto no cabe en 2 MB                                       |
+| `PHOTO_MIN_JPEG_QUALITY`      | 0.5                | —          | Piso de la calidad si la foto no cabe en 2 MB                                        |
+| `LOCATION_MAX_ACCURACY_M`     | 50                 | 10–100     | Por encima, la app no deja enviar                                                    |
+| `LOCATION_GOOD_ACCURACY_M`    | 10                 | —          | Meta del documento original; la app la muestra como «buena»                          |
+| `LOCATION_UPDATE_INTERVAL_MS` | 2 000              | —          | Cada cuánto llega una lectura del GPS con la pantalla Reportar abierta               |
+| `NOTE_MAX_CHARS`              | 280                | —          | Igual a las reglas                                                                   |
+| `MY_REPORTS_LIMIT`            | 50                 | 10–200     | Reportes que trae «Mis reportes», los más recientes primero                          |
+| `OPERATOR_INBOX_LIMIT`        | 50                 | 10–200     | Reportes que trae la bandeja del operador (`features/operator`)                      |
+| `OPERATOR_ALERTS_LIMIT`       | 20                 | 5–100      | Alertas abiertas o atendidas que trae la bandeja del operador                        |
+| `MAX_FCM_TOKENS`              | 5                  | —          | Tokens de aviso por usuario, uno por dispositivo; el mismo tope de `firestore.rules` |
+| `MAP_RADIUS_M`                | 3 000              | 500–10 000 | Radio de la búsqueda del mapa alrededor del usuario (`features/map`)                 |
+| `MAP_REPORTS_PER_RANGE_LIMIT` | 50                 | 10–200     | Tope de reportes por cada rango de geohash de la consulta del mapa                   |
+| `MAP_INITIAL_ZOOM`            | 13                 | —          | Zoom con el que el radio de búsqueda cabe en la pantalla                             |
+| `MAP_FALLBACK_CENTER`         | 7.11935, -73.12274 | —          | Centro de Bucaramanga: donde abre el mapa sin permiso de ubicación                   |
+| `UPLOAD_MAX_ATTEMPTS`         | 8                  | 3–20       | Reintentos de la cola antes de pedir ayuda al usuario                                |
+| `UPLOAD_BACKOFF_BASE_MS`      | 2 000              | —          | Espera exponencial: 2 s, 4 s, 8 s… hasta 5 min                                       |
+| `UPLOAD_ATTEMPT_TIMEOUT_MS`   | 30 000             | —          | Tope de un intento de subida; después falla y espera el reintento                    |
 
 **Compresión de la foto** (`domain/photo-compression.ts`): la app prueba cuatro intentos en orden y se queda con el primero que pesa `PHOTO_MAX_BYTES` o menos. Baja la calidad antes que la resolución, porque la IA necesita el detalle: 1600 px a 0.7 → 1600 px a 0.5 → 1200 px a 0.5 → 800 px a 0.5. Si ninguno cabe, la app pide repetir la foto; nunca sube una que `storage.rules` rechazaría.
 
@@ -58,6 +59,8 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 **Foto del reporte** (`domain/report-photo.ts`): mientras la foto está en la cola, la tarjeta y el detalle muestran la copia del teléfono, así que se ve sin conexión. La cola borra esa copia al subirla; después la foto se lee de Storage con su URL de descarga, que las reglas solo dan al autor y a los operadores. Un reporte cancelado antes de subir no tiene foto.
 
 **Mapa** (`src/features/map/`, RF05, ADR 0008): la consulta pide los reportes públicos (`approved`, `in_progress`, `resolved`) por rangos de geohash alrededor del usuario (`geohashRanges`), con un listener por rango, y descarta por distancia real los que quedan fuera de `MAP_RADIUS_M`. El centro de la búsqueda se redondea a tres decimales (unos 110 m) para no repetir la consulta con cada lectura del GPS. Los filtros por estado, tipo y complejidad se aplican en el teléfono. El estado de cada punto se ve por su color y, con texto y símbolo, en la lista de abajo.
+
+**Avisos en la app** (`src/features/notifications/`, RF08 y RF03): al iniciar sesión la app pide el permiso de notificaciones (en Android 13 o superior), guarda el token del dispositivo en `users/{uid}.fcmTokens` y lo vuelve a guardar cuando FCM lo renueva. Si la lista pasa de `MAX_FCM_TOKENS`, salen los más viejos. Una cuenta de operador suscribe el dispositivo al tema `operators`; cualquier otra lo desuscribe. Al cerrar sesión se quita el token y la suscripción. Tocar un aviso abre el reporte (`report_status`) o la bandeja (`operator_alert`). Sin permiso o sin red la app funciona igual, sin avisos. FCM no tiene emulador: el token sale del proyecto de `google-services.json` aunque los datos estén en los emuladores.
 
 **Geohash** (`src/lib/geo/geohash.ts`): `GEOHASH_PRECISION` = 9 caracteres (celdas de unos 5 m). Es el largo que exige `firestore.rules` y se calcula con `geofire-common`, la misma librería de las consultas por cercanía del mapa.
 
