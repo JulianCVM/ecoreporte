@@ -12,7 +12,7 @@ export default function MyReportsScreen() {
     <ScreenScaffold
       title="Mis reportes"
       description="El estado de cada reporte se actualiza en vivo."
-      pending={['RF06 · Miniatura de la foto', 'RF08 · Aviso push cuando cambia el estado']}>
+      pending={['RF08 · Aviso push cuando cambia el estado']}>
       {session.status === 'signed-in' ? (
         <MyReportsList
           authorUid={session.user.uid}

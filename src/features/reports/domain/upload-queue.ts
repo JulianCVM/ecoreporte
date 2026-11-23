@@ -95,6 +95,20 @@ export function retried(entry: UploadEntry, nowMs: number): UploadEntry {
   return { ...entry, attempts: 0, state: 'pending', nextAttemptAtMs: nowMs, lastError: null };
 }
 
+/**
+ * La cola después de que el usuario pide reintentar un reporte. Solo cambia una entrada
+ * `failed`: una que sigue pendiente ya tiene su espera y no debe saltársela a mano.
+ */
+export function withRetriedReport(
+  entries: readonly UploadEntry[],
+  reportId: string,
+  nowMs: number,
+): UploadEntry[] {
+  return entries.map((entry) =>
+    entry.reportId === reportId && entry.state === 'failed' ? retried(entry, nowMs) : entry,
+  );
+}
+
 /** Entradas del usuario a las que ya les toca un intento. */
 export function dueEntries(
   entries: readonly UploadEntry[],

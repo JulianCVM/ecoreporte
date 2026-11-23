@@ -3,6 +3,7 @@ import {
   processUploadQueue,
   withEntry,
   withoutReport,
+  withRetriedReport,
   type QueueRunSummary,
   type UploadQueueDeps,
 } from '../domain/upload-queue';
@@ -37,8 +38,27 @@ export function onUploadQueueChange(listener: QueueListener): () => void {
   };
 }
 
+const stateListeners = new Set<QueueListener>();
+
+/**
+ * Avisa cuando cambia lo que la pantalla muestra de la cola: entra o sale una foto, o termina
+ * una pasada. Va aparte de `onUploadQueueChange`, que dispara pasadas: si una pasada avisara
+ * por ese canal, se llamaría a sí misma sin parar.
+ */
+export function onUploadQueueState(listener: QueueListener): () => void {
+  stateListeners.add(listener);
+  return () => {
+    stateListeners.delete(listener);
+  };
+}
+
+function notifyState(): void {
+  stateListeners.forEach((listener) => listener());
+}
+
 function notifyChange(): void {
   listeners.forEach((listener) => listener());
+  notifyState();
 }
 
 /** Agrega la foto de un reporte recién creado; el primer intento es inmediato. */
@@ -59,6 +79,12 @@ export function dequeueUpload(reportId: string): void {
   if (!entry) return;
   saveUploadQueue(withoutReport(entries, reportId));
   removeLocalPhoto(entry.localUri);
+  notifyChange();
+}
+
+/** Vuelve a poner en marcha la subida de un reporte que quedó en `failed`. */
+export function retryUpload(reportId: string): void {
+  saveUploadQueue(withRetriedReport(loadUploadQueue(), reportId, Date.now()));
   notifyChange();
 }
 
@@ -85,6 +111,7 @@ export function runUploadQueue(authorUid: string): Promise<QueueRunSummary> {
   running = run().finally(() => {
     running = null;
     rerunRequested = false;
+    notifyState();
   });
   return running;
 }

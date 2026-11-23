@@ -9,6 +9,8 @@ export type MyReport = {
   /** Hora del teléfono al tomar la foto (epoch en ms). */
   capturedAtMs: number;
   note: string | null;
+  /** Ruta de la foto en Storage; `null` si el documento no la trae. */
+  photoPath: string | null;
 };
 
 /** Un `Timestamp` de Firestore, sin importar el SDK: al dominio le basta `toMillis()`. */
@@ -24,6 +26,7 @@ const myReportSchema = z.object({
   status: z.enum(REPORT_STATUSES),
   capturedAt: z.custom<TimestampLike>(isTimestampLike),
   note: z.string().optional(),
+  photo: z.object({ path: z.string().min(1) }).optional(),
 });
 
 /**
@@ -34,8 +37,14 @@ const myReportSchema = z.object({
 export function parseMyReport(id: string, data: unknown): MyReport | null {
   const parsed = myReportSchema.safeParse(data);
   if (!parsed.success) return null;
-  const { status, capturedAt, note } = parsed.data;
-  return { id, status, capturedAtMs: capturedAt.toMillis(), note: note ?? null };
+  const { status, capturedAt, note, photo } = parsed.data;
+  return {
+    id,
+    status,
+    capturedAtMs: capturedAt.toMillis(),
+    note: note ?? null,
+    photoPath: photo?.path ?? null,
+  };
 }
 
 export type StatusPresentation = {

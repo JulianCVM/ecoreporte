@@ -5,6 +5,8 @@ import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 
 import { cancelReport } from '../data/report-repository';
+import { retryUpload } from '../data/upload-queue';
+import { useUploadEntries } from '../data/use-upload-entries';
 import { useMyReports } from '../data/use-my-reports';
 import { ReportCard } from './report-card';
 
@@ -19,6 +21,7 @@ type Props = {
 export function MyReportsList({ authorUid, onOpenReport }: Props) {
   const theme = useTheme();
   const state = useMyReports(authorUid);
+  const uploads = useUploadEntries();
 
   if (state.status === 'loading') {
     return <ActivityIndicator color={theme.primary} accessibilityLabel="Cargando tus reportes" />;
@@ -36,7 +39,14 @@ export function MyReportsList({ authorUid, onOpenReport }: Props) {
   return (
     <>
       {state.reports.map((report) => (
-        <ReportCard key={report.id} report={report} onCancel={cancelReport} onOpen={onOpenReport} />
+        <ReportCard
+          key={report.id}
+          report={report}
+          uploadEntry={uploads.find((entry) => entry.reportId === report.id)}
+          onCancel={cancelReport}
+          onOpen={onOpenReport}
+          onRetryUpload={retryUpload}
+        />
       ))}
     </>
   );
