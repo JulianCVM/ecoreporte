@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { db, doc, onSnapshot } from '@/lib/firebase';
+import { reportError } from '@/lib/observability/errors';
 
 import { parseReportDetail, type ReportDetail } from '../domain/report-detail';
 
@@ -23,7 +24,7 @@ export function useReport(reportId: string): ReportState {
         setState(report ? { status: 'ready', report } : { status: 'missing' });
       },
       (cause) => {
-        console.error(`[reports] falló el listener del reporte ${reportId}`, cause);
+        reportError(`[reports] falló el listener del reporte ${reportId}`, cause);
         setState({ status: 'error', message: cause.message });
       },
     );

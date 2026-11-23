@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { messaging, onTokenRefresh } from '@/lib/firebase';
+import { reportError } from '@/lib/observability/errors';
 
 import { registerDevice, saveToken } from './push-repository';
 
@@ -15,11 +16,11 @@ export function usePushRegistration(uid: string | null, isOperator: boolean): vo
   useEffect(() => {
     if (!uid) return;
     registerDevice(uid, isOperator).catch((cause: unknown) => {
-      console.error('[push] no se pudo registrar el dispositivo para los avisos', cause);
+      reportError('[push] no se pudo registrar el dispositivo para los avisos', cause);
     });
     return onTokenRefresh(messaging(), (token) => {
       saveToken(uid, token).catch((cause: unknown) => {
-        console.error('[push] no se pudo guardar el token renovado', cause);
+        reportError('[push] no se pudo guardar el token renovado', cause);
       });
     });
   }, [uid, isOperator]);

@@ -133,11 +133,17 @@ Regla de veredicto (función pura `decideVerdict`, con pruebas):
 
 ## Eventos de Analytics
 
-| Evento                  | Parámetros                                         |
-| ----------------------- | -------------------------------------------------- |
-| `report_started`        | —                                                  |
-| `report_created`        | `offline` (bool), `accuracy_m`                     |
-| `report_uploaded`       | `attempts`, `bytes`, `delay_s` (desde la creación) |
-| `report_verdict_seen`   | `status`                                           |
-| `report_status_changed` | `from`, `to` (lo dispara el operador)              |
-| `map_opened`            | `radius_km`                                        |
+Los nombres y los parámetros están tipados en `src/lib/observability/analytics.ts` (`trackEvent`): un evento que no esté en esta tabla no compila. Ninguno lleva datos personales (ni `uid`, ni coordenadas, ni texto del usuario). `report_uploaded` está declarado pero todavía no se envía: la cola de subida no entrega los intentos ni el tamaño al terminar.
+
+| Evento                  | Parámetros                                                 |
+| ----------------------- | ---------------------------------------------------------- |
+| `report_started`        | — (al tener la foto lista)                                 |
+| `report_created`        | `offline` (bool), `accuracy_m`                             |
+| `report_uploaded`       | `attempts`, `bytes`, `delay_s` (desde la creación)         |
+| `report_verdict_seen`   | `status` (al abrir el detalle de un reporte con veredicto) |
+| `report_status_changed` | `from`, `to` (lo dispara el operador)                      |
+| `map_opened`            | `radius_km`                                                |
+
+## Errores no fatales
+
+`reportError(mensaje, causa)` (`src/lib/observability/errors.ts`) es la única forma de registrar un error en la app: lo escribe en la consola y lo manda a Crashlytics como no fatal, con el entorno (`EXPO_PUBLIC_ENV`) como atributo `env`. El mensaje lleva el prefijo de la feature (`[reports] …`) y el dato que falló (un ID de reporte), nunca correos, nombres ni coordenadas. Crashlytics y Analytics no tienen emulador: hablan con el proyecto de `google-services.json` (`ecoreporte-dev`, plan Spark) aunque los datos estén en los emuladores.

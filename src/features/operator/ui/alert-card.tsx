@@ -9,6 +9,7 @@ import { Spacing } from '@/constants/theme';
 import { categoryLabel, complexityLabel } from '@/features/reports/domain/report-detail';
 import { formatCoordinates } from '@/features/reports/domain/report-location';
 import { formatDate } from '@/features/reports/ui/format-date';
+import { reportError } from '@/lib/observability/errors';
 
 import {
   alertStatusText,
@@ -38,7 +39,7 @@ export function AlertCard({ alert, onAdvance, onOpenReport }: Props) {
     try {
       await onAdvance(alert.id, alert.status);
     } catch (cause) {
-      console.error(`[operator] no se pudo avanzar la alerta ${alert.id}`, cause);
+      reportError(`[operator] no se pudo avanzar la alerta ${alert.id}`, cause);
       setError(`No se pudo cambiar la alerta: ${cause instanceof Error ? cause.message : cause}`);
     } finally {
       setBusy(false);

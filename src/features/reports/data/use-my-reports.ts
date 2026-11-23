@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { collection, db, limit, onSnapshot, orderBy, query, where } from '@/lib/firebase';
+import { reportError } from '@/lib/observability/errors';
 
 import { MY_REPORTS_LIMIT } from '../domain/limits';
 import { parseMyReport, type MyReport } from '../domain/my-report';
@@ -32,13 +33,13 @@ export function useMyReports(authorUid: string): MyReportsState {
         const reports = snapshot.docs.flatMap((document) => {
           const report = parseMyReport(document.id, document.data());
           if (report) return [report];
-          console.error(`[reports] el reporte ${document.id} no tiene la forma esperada`);
+          reportError(`[reports] el reporte ${document.id} no tiene la forma esperada`);
           return [];
         });
         setState({ status: 'ready', reports });
       },
       (cause) => {
-        console.error('[reports] falló el listener de «Mis reportes»', cause);
+        reportError('[reports] falló el listener de «Mis reportes»', cause);
         setState({ status: 'error', message: cause.message });
       },
     );

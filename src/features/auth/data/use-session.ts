@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { auth, getIdTokenResult, onIdTokenChanged, type User } from '@/lib/firebase';
+import { reportError } from '@/lib/observability/errors';
 
 import { roleFromClaims, type Role } from '../domain/role';
 
@@ -23,7 +24,7 @@ async function toSession(user: User | null): Promise<Session> {
     role = roleFromClaims((await getIdTokenResult(user)).claims);
   } catch (cause) {
     // Sin claims la sesión sigue siendo válida: entra como ciudadano, el permiso menor.
-    console.error('[auth] no se pudieron leer los claims del token', cause);
+    reportError('[auth] no se pudieron leer los claims del token', cause);
   }
   return {
     status: 'signed-in',

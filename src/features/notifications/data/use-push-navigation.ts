@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { getInitialNotification, messaging, onNotificationOpenedApp } from '@/lib/firebase';
+import { reportError } from '@/lib/observability/errors';
 
 import { pushTarget, type PushTarget } from '../domain/push-target';
 
@@ -25,7 +26,7 @@ export function usePushNavigation(enabled: boolean, onOpen: (target: PushTarget)
     getInitialNotification(messaging())
       .then((message) => open(message?.data))
       .catch((cause: unknown) => {
-        console.error('[push] no se pudo leer el aviso que abrió la app', cause);
+        reportError('[push] no se pudo leer el aviso que abrió la app', cause);
       });
     return onNotificationOpenedApp(messaging(), (message) => open(message.data));
   }, [enabled]);

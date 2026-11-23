@@ -10,6 +10,9 @@ import {
 /** Disco simulado: URI → contenido. */
 const mockDisk = new Map<string, string>();
 
+// Crashlytics es nativo: aquí solo importa que el error se registre en la consola.
+jest.mock('@/lib/firebase', () => ({ crashlytics: () => ({}), recordError: jest.fn() }));
+
 jest.mock('expo-file-system', () => {
   const join = (parts: (string | { uri: string })[]) =>
     parts.map((part) => (typeof part === 'string' ? part : part.uri)).join('/');

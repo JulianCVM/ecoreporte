@@ -9,6 +9,7 @@ import {
   updateDoc,
 } from '@/lib/firebase';
 import { encodeGeohash } from '@/lib/geo/geohash';
+import { reportError } from '@/lib/observability/errors';
 
 import { buildNewReport, type NewReport, type ReportDraft } from '../domain/new-report';
 import { dequeueUpload, enqueueUpload } from './upload-queue';
@@ -52,7 +53,7 @@ export function submitReport(draft: ReportDraft, authorUid: string, capturedAtMs
   // llega a Storage.
   setDoc(reference, toDocument(report)).catch((cause: unknown) => {
     // Las reglas lo rechazaron al sincronizar: sin reporte, la foto no debe subir.
-    console.error(`[reports] el servidor rechazó el reporte ${report.id}`, cause);
+    reportError(`[reports] el servidor rechazó el reporte ${report.id}`, cause);
     dequeueUpload(report.id);
   });
   enqueueUpload({
@@ -74,6 +75,6 @@ export function cancelReport(reportId: string): void {
     status: 'cancelled',
     updatedAt: serverTimestamp(),
   }).catch((cause: unknown) => {
-    console.error(`[reports] no se pudo cancelar el reporte ${reportId}`, cause);
+    reportError(`[reports] no se pudo cancelar el reporte ${reportId}`, cause);
   });
 }

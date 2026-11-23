@@ -2,6 +2,8 @@ import { canTransition } from '@/features/reports/domain/report-status';
 import type { ReportStatus } from '@/features/reports/domain/types';
 import { nextAlertStep, type AlertStatus } from '../domain/operator-alert';
 
+import { trackEvent } from '@/lib/observability/analytics';
+
 import { arrayUnion, db, doc, serverTimestamp, Timestamp, updateDoc } from '@/lib/firebase';
 
 /**
@@ -25,6 +27,7 @@ export async function changeReportStatus(
     statusHistory: arrayUnion({ status: to, by: 'operator', at: Timestamp.now() }),
     updatedAt: serverTimestamp(),
   });
+  trackEvent('report_status_changed', { from, to });
 }
 
 /**

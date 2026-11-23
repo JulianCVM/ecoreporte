@@ -1,5 +1,7 @@
 import { Directory, File, Paths } from 'expo-file-system';
 
+import { reportError } from '@/lib/observability/errors';
+
 import { uploadEntrySchema, type UploadEntry } from '../domain/upload-queue';
 
 /**
@@ -30,17 +32,17 @@ export function loadUploadQueue(): UploadEntry[] {
   try {
     raw = JSON.parse(file.textSync());
   } catch (cause) {
-    console.error('[upload-queue] queue.json no es JSON válido; la cola empieza vacía', cause);
+    reportError('[upload-queue] queue.json no es JSON válido; la cola empieza vacía', cause);
     return [];
   }
   if (!Array.isArray(raw)) {
-    console.error('[upload-queue] queue.json no contiene una lista; la cola empieza vacía');
+    reportError('[upload-queue] queue.json no contiene una lista; la cola empieza vacía');
     return [];
   }
   return raw.flatMap((candidate: unknown) => {
     const parsed = uploadEntrySchema.safeParse(candidate);
     if (parsed.success) return [parsed.data];
-    console.error('[upload-queue] se descartó una entrada inválida', parsed.error.issues);
+    reportError('[upload-queue] se descartó una entrada inválida', parsed.error.issues);
     return [];
   });
 }

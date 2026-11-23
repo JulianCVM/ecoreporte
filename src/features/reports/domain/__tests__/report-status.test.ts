@@ -1,4 +1,4 @@
-import { canTransition, isFinal, isPublic, nextStatuses } from '../report-status';
+import { canTransition, hasVerdict, isFinal, isPublic, nextStatuses } from '../report-status';
 import { REPORT_STATUSES } from '../types';
 
 describe('máquina de estados del reporte', () => {
@@ -38,5 +38,19 @@ describe('máquina de estados del reporte', () => {
 
   it('solo aprobados, en curso y resueltos son públicos', () => {
     expect(REPORT_STATUSES.filter(isPublic)).toEqual(['approved', 'in_progress', 'resolved']);
+  });
+});
+
+describe('hasVerdict', () => {
+  it('hay veredicto desde que la IA o el operador deciden', () => {
+    expect(REPORT_STATUSES.filter(hasVerdict)).toEqual(
+      expect.arrayContaining(['approved', 'needs_review', 'rejected', 'in_progress', 'resolved']),
+    );
+  });
+
+  it('un reporte sin subir, en análisis o cancelado todavía no tiene veredicto', () => {
+    expect(hasVerdict('pending_upload')).toBe(false);
+    expect(hasVerdict('processing_ai')).toBe(false);
+    expect(hasVerdict('cancelled')).toBe(false);
   });
 });
