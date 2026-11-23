@@ -124,6 +124,9 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // `aiUsage/{día}` (contador de AI_DAILY_LIMIT) no tiene regla propia: solo lo usa la Function
+    // con el Admin SDK, y para el cliente cae en el cierre general de abajo.
+
     // Todo lo demás, cerrado.
     match /{document=**} {
       allow read, write: if false;

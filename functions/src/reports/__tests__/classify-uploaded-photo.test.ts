@@ -7,6 +7,7 @@ import {
   type ClassifyDeps,
 } from '../classify-uploaded-photo';
 import type { Evaluation, FinalOutcome, ReportStore, StartResult } from '../report-store';
+import { addUserReport, reserveAiCall, type DailyCounter } from '../usage-limits';
 
 const UID = 'uid-1';
 const REPORT_ID = 'AbCdEfGhIjKlMnOpQrSt';
@@ -14,6 +15,8 @@ const PHOTO_PATH = `reports/${UID}/${REPORT_ID}.jpg`;
 
 const config: ClassifyDeps['config'] = {
   aiEnabled: true,
+  aiDailyLimit: 200,
+  reportsPerUserPerDay: 10,
   aiMaxAttempts: 2,
   aiTimeoutMs: 15_000,
   aiApproveThreshold: 0.8,
@@ -36,6 +39,8 @@ function fakeStore(report: { authorUid: string; photoPath: string; status: strin
     evaluations: [] as Evaluation[],
     finished: [] as FinalOutcome[],
     startCalls: 0,
+    userCounter: undefined as DailyCounter | undefined,
+    aiCounter: undefined as DailyCounter | undefined,
   };
   const store: ReportStore = {
     startProcessing: async (_reportId, expected): Promise<StartResult> => {
@@ -50,6 +55,16 @@ function fakeStore(report: { authorUid: string; photoPath: string; status: strin
       if (state.report.status !== 'pending_upload') return 'not_pending';
       state.report.status = 'processing_ai';
       return 'started';
+    },
+    countUserReport: async (_authorUid, day, limit) => {
+      const { next, withinLimit } = addUserReport(state.userCounter, day, limit);
+      state.userCounter = next;
+      return withinLimit;
+    },
+    reserveAiCall: async (day, limit) => {
+      const next = reserveAiCall(state.aiCounter, day, limit);
+      if (next) state.aiCounter = next;
+      return next !== null;
     },
     saveEvaluation: async (_reportId, evaluation) => {
       state.evaluations.push(evaluation);
@@ -237,6 +252,101 @@ describe('classifyUploadedPhoto · fallos de la IA', () => {
     expect(calls).toHaveLength(0);
     expect(state.evaluations).toHaveLength(0);
     expect(state.finished).toEqual([{ status: 'needs_review', ai: null, reason: 'ai_disabled' }]);
+  });
+});
+
+describe('classifyUploadedPhoto · topes de uso (RNF05)', () => {
+  // El reloj de las pruebas cae el 2026-11-18 en Colombia.
+  const TODAY = '2026-11-18';
+
+  it('cuenta el reporte del autor y la llamada a la IA', async () => {
+    const { deps, state } = setup();
+
+    await classifyUploadedPhoto(PHOTO_PATH, deps);
+
+    expect(state.userCounter).toEqual({ date: TODAY, count: 1 });
+    expect(state.aiCounter).toEqual({ date: TODAY, count: 1 });
+  });
+
+  it('al pasar el tope por usuario va a revisión con el motivo, sin gastar IA', async () => {
+    const { deps, state, calls } = setup({ config: { reportsPerUserPerDay: 3 } });
+    state.userCounter = { date: TODAY, count: 3 };
+
+    const result = await classifyUploadedPhoto(PHOTO_PATH, deps);
+
+    expect(result).toMatchObject({ status: 'needs_review' });
+    expect(state.finished).toEqual([
+      { status: 'needs_review', ai: null, reason: 'user_daily_limit' },
+    ]);
+    expect(calls).toHaveLength(0);
+    expect(state.aiCounter).toBeUndefined();
+    expect(state.userCounter).toEqual({ date: TODAY, count: 4 });
+  });
+
+  it('el último reporte dentro del tope por usuario sí se clasifica', async () => {
+    const { deps, state } = setup({ config: { reportsPerUserPerDay: 3 } });
+    state.userCounter = { date: TODAY, count: 2 };
+
+    expect(await classifyUploadedPhoto(PHOTO_PATH, deps)).toMatchObject({ status: 'approved' });
+  });
+
+  it('el contador de ayer no cuenta hoy', async () => {
+    const { deps, state } = setup({ config: { reportsPerUserPerDay: 3, aiDailyLimit: 5 } });
+    state.userCounter = { date: '2026-11-17', count: 99 };
+    state.aiCounter = { date: '2026-11-17', count: 99 };
+
+    expect(await classifyUploadedPhoto(PHOTO_PATH, deps)).toMatchObject({ status: 'approved' });
+    expect(state.userCounter).toEqual({ date: TODAY, count: 1 });
+  });
+
+  it('al alcanzar AI_DAILY_LIMIT va a revisión con el motivo, sin llamar a la IA', async () => {
+    const { deps, state, calls } = setup({ config: { aiDailyLimit: 5 } });
+    state.aiCounter = { date: TODAY, count: 5 };
+
+    await classifyUploadedPhoto(PHOTO_PATH, deps);
+
+    expect(calls).toHaveLength(0);
+    expect(state.finished).toEqual([
+      { status: 'needs_review', ai: null, reason: 'ai_daily_limit' },
+    ]);
+    expect(state.aiCounter).toEqual({ date: TODAY, count: 5 });
+  });
+
+  it('un reintento también gasta cupo: sin cupo no reintenta', async () => {
+    const failure = new ClassifierError('no respondió', 'timeout');
+    const { deps, state, calls } = setup({
+      script: [failure, approved],
+      config: { aiDailyLimit: 5 },
+    });
+    state.aiCounter = { date: TODAY, count: 4 };
+
+    await classifyUploadedPhoto(PHOTO_PATH, deps);
+
+    expect(calls).toHaveLength(1);
+    expect(state.finished[0]).toMatchObject({ status: 'needs_review', reason: 'ai_failed' });
+    expect(state.aiCounter).toEqual({ date: TODAY, count: 5 });
+  });
+
+  it('con la IA apagada no se gasta cupo global, pero el reporte del autor sí cuenta', async () => {
+    const { deps, state } = setup({ config: { aiEnabled: false } });
+
+    await classifyUploadedPhoto(PHOTO_PATH, deps);
+
+    expect(state.aiCounter).toBeUndefined();
+    expect(state.userCounter).toEqual({ date: TODAY, count: 1 });
+  });
+
+  it('si el contador falla, el reporte igual sale de processing_ai', async () => {
+    const { deps, state } = setup();
+    deps.store.countUserReport = async () => {
+      throw new Error('Firestore no disponible');
+    };
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await classifyUploadedPhoto(PHOTO_PATH, deps);
+
+    expect(state.report?.status).toBe('needs_review');
+    jest.restoreAllMocks();
   });
 });
 

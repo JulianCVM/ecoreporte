@@ -59,6 +59,18 @@ export interface ReportStore {
     expected: { authorUid: string; photoPath: string },
     atMs: number,
   ): Promise<StartResult>;
+  /**
+   * Suma un reporte al contador diario del autor (`users/{uid}.reportsToday`).
+   *
+   * @returns `true` si el reporte quedó dentro de `limit`.
+   */
+  countUserReport(authorUid: string, day: string, limit: number): Promise<boolean>;
+  /**
+   * Reserva una llamada a la IA en el contador global del día (`aiUsage/{day}`).
+   *
+   * @returns `false` si ya se alcanzó `limit`; en ese caso no suma.
+   */
+  reserveAiCall(day: string, limit: number): Promise<boolean>;
   saveEvaluation(reportId: string, evaluation: Evaluation): Promise<void>;
   /** Escribe el veredicto: estado final del sistema, `ai` y el rastro en `statusHistory`. */
   finish(reportId: string, outcome: FinalOutcome, atMs: number): Promise<void>;
