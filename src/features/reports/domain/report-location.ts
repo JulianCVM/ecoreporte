@@ -43,3 +43,10 @@ export function formatAccuracy(accuracyM: number | null | undefined): string {
   if (accuracyM == null || !Number.isFinite(accuracyM) || accuracyM < 0) return 'sin dato';
   return `±${Math.ceil(accuracyM)} m`;
 }
+
+const COORDINATE_DECIMALS = 5; // Cinco decimales son cerca de 1 m: suficiente para verificar a ojo.
+
+/** «7.11935, -73.12274»: latitud y longitud como se le muestran al usuario. */
+export function formatCoordinates(latitude: number, longitude: number): string {
+  return `${latitude.toFixed(COORDINATE_DECIMALS)}, ${longitude.toFixed(COORDINATE_DECIMALS)}`;
+}

@@ -11,10 +11,12 @@ import { ReportCard } from './report-card';
 type Props = {
   /** Usuario con sesión, dueño de los reportes. */
   authorUid: string;
+  /** Abre el detalle de un reporte; la navegación la pone la ruta. */
+  onOpenReport: (reportId: string) => void;
 };
 
 /** Lista en vivo de los reportes del usuario, con sus estados vacío, de carga y de error (RF06). */
-export function MyReportsList({ authorUid }: Props) {
+export function MyReportsList({ authorUid, onOpenReport }: Props) {
   const theme = useTheme();
   const state = useMyReports(authorUid);
 
@@ -34,7 +36,7 @@ export function MyReportsList({ authorUid }: Props) {
   return (
     <>
       {state.reports.map((report) => (
-        <ReportCard key={report.id} report={report} onCancel={cancelReport} />
+        <ReportCard key={report.id} report={report} onCancel={cancelReport} onOpen={onOpenReport} />
       ))}
     </>
   );

@@ -4,9 +4,12 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 
-import { accuracyStatus, formatAccuracy, type LocationReading } from '../domain/report-location';
-
-const COORDINATE_DECIMALS = 5; // Cinco decimales son cerca de 1 m: suficiente para verificar a ojo.
+import {
+  accuracyStatus,
+  formatAccuracy,
+  formatCoordinates,
+  type LocationReading,
+} from '../domain/report-location';
 
 /** Coordenadas y precisión de la ubicación del reporte, con símbolo y texto (RNF06). */
 export function LocationStatus({ reading }: { reading: LocationReading }) {
@@ -24,8 +27,7 @@ export function LocationStatus({ reading }: { reading: LocationReading }) {
         {status.symbol} {status.label} · {formatAccuracy(reading.accuracyM)}
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
-        {reading.latitude.toFixed(COORDINATE_DECIMALS)},{' '}
-        {reading.longitude.toFixed(COORDINATE_DECIMALS)}
+        {formatCoordinates(reading.latitude, reading.longitude)}
       </ThemedText>
       {status.hint ? <ThemedText type="small">{status.hint}</ThemedText> : null}
     </ThemedView>

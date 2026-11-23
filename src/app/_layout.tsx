@@ -23,6 +23,8 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={signedIn} redirectTo="/iniciar-sesion">
           <Stack.Screen name="(tabs)" />
+          {/* El encabezado nativo da el botón de volver; el título lo pone la pantalla. */}
+          <Stack.Screen name="reporte/[id]" options={{ headerShown: true, title: '' }} />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="(auth)" />
