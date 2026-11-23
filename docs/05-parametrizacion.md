@@ -12,9 +12,10 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 
 **Permisos nativos** (config plugins de `app.config.ts`; cambiarlos exige un development build nuevo):
 
-| Plugin        | Configuración                                                                              | Efecto                                                                             |
-| ------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| `expo-camera` | `recordAudioAndroid: false`, `microphonePermission: false`, `barcodeScannerEnabled: false` | El APK solo pide `CAMERA`: la app toma fotos, no graba audio ni lee códigos (RF01) |
+| Plugin          | Configuración                                                                                                    | Efecto                                                                                                                    |
+| --------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `expo-camera`   | `recordAudioAndroid: false`, `microphonePermission: false`, `barcodeScannerEnabled: false`                       | El APK solo pide `CAMERA`: la app toma fotos, no graba audio ni lee códigos (RF01)                                        |
+| `expo-location` | `locationAlwaysAndWhenInUsePermission: false`, `locationAlwaysPermission: false`, `motionUsagePermission: false` | Ubicación solo en primer plano (`ACCESS_FINE_LOCATION` y `ACCESS_COARSE_LOCATION`), sin segundo plano ni actividad física |
 
 ## Cliente (`EXPO_PUBLIC_*`, validadas con zod en `src/lib/config/env.ts`)
 
@@ -28,20 +29,23 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 
 ## Constantes del dominio en el cliente (`src/features/reports/domain/limits.ts`)
 
-| Constante                  | Por defecto      | Rango    | Por qué                                                     |
-| -------------------------- | ---------------- | -------- | ----------------------------------------------------------- |
-| `PHOTO_MAX_EDGE_PX`        | 1600             | 800–2400 | Detalle suficiente para la IA sin pasar de 2 MB             |
-| `PHOTO_JPEG_QUALITY`       | 0.7              | 0.5–0.9  | Tamaño frente a calidad                                     |
-| `PHOTO_MAX_BYTES`          | 2 097 152 (2 MB) | —        | Igual al límite de `storage.rules`                          |
-| `PHOTO_MIN_EDGE_PX`        | 800              | —        | Piso del lado mayor si la foto no cabe en 2 MB              |
-| `PHOTO_MIN_JPEG_QUALITY`   | 0.5              | —        | Piso de la calidad si la foto no cabe en 2 MB               |
-| `LOCATION_MAX_ACCURACY_M`  | 50               | 10–100   | Por encima, la app no deja enviar                           |
-| `LOCATION_GOOD_ACCURACY_M` | 10               | —        | Meta del documento original; la app la muestra como «buena» |
-| `NOTE_MAX_CHARS`           | 280              | —        | Igual a las reglas                                          |
-| `UPLOAD_MAX_ATTEMPTS`      | 8                | 3–20     | Reintentos de la cola antes de pedir ayuda al usuario       |
-| `UPLOAD_BACKOFF_BASE_MS`   | 2 000            | —        | Espera exponencial: 2 s, 4 s, 8 s… hasta 5 min              |
+| Constante                     | Por defecto      | Rango    | Por qué                                                                |
+| ----------------------------- | ---------------- | -------- | ---------------------------------------------------------------------- |
+| `PHOTO_MAX_EDGE_PX`           | 1600             | 800–2400 | Detalle suficiente para la IA sin pasar de 2 MB                        |
+| `PHOTO_JPEG_QUALITY`          | 0.7              | 0.5–0.9  | Tamaño frente a calidad                                                |
+| `PHOTO_MAX_BYTES`             | 2 097 152 (2 MB) | —        | Igual al límite de `storage.rules`                                     |
+| `PHOTO_MIN_EDGE_PX`           | 800              | —        | Piso del lado mayor si la foto no cabe en 2 MB                         |
+| `PHOTO_MIN_JPEG_QUALITY`      | 0.5              | —        | Piso de la calidad si la foto no cabe en 2 MB                          |
+| `LOCATION_MAX_ACCURACY_M`     | 50               | 10–100   | Por encima, la app no deja enviar                                      |
+| `LOCATION_GOOD_ACCURACY_M`    | 10               | —        | Meta del documento original; la app la muestra como «buena»            |
+| `LOCATION_UPDATE_INTERVAL_MS` | 2 000            | —        | Cada cuánto llega una lectura del GPS con la pantalla Reportar abierta |
+| `NOTE_MAX_CHARS`              | 280              | —        | Igual a las reglas                                                     |
+| `UPLOAD_MAX_ATTEMPTS`         | 8                | 3–20     | Reintentos de la cola antes de pedir ayuda al usuario                  |
+| `UPLOAD_BACKOFF_BASE_MS`      | 2 000            | —        | Espera exponencial: 2 s, 4 s, 8 s… hasta 5 min                         |
 
 **Compresión de la foto** (`domain/photo-compression.ts`): la app prueba cuatro intentos en orden y se queda con el primero que pesa `PHOTO_MAX_BYTES` o menos. Baja la calidad antes que la resolución, porque la IA necesita el detalle: 1600 px a 0.7 → 1600 px a 0.5 → 1200 px a 0.5 → 800 px a 0.5. Si ninguno cabe, la app pide repetir la foto; nunca sube una que `storage.rules` rechazaría.
+
+**Geohash** (`src/lib/geo/geohash.ts`): `GEOHASH_PRECISION` = 9 caracteres (celdas de unos 5 m). Es el largo que exige `firestore.rules` y se calcula con `geofire-common`, la misma librería de las consultas por cercanía del mapa.
 
 ## Constantes de la cuenta en el cliente (`src/features/auth/domain/limits.ts`)
 

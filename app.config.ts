@@ -101,6 +101,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
+      'expo-location',
+      {
+        locationWhenInUsePermission:
+          'EcoReporte usa tu ubicación para marcar dónde están los residuos de cada reporte.',
+        // Solo se lee en primer plano, con la pantalla Reportar abierta (RF01): sin ubicación
+        // en segundo plano ni detección de actividad.
+        locationAlwaysAndWhenInUsePermission: false,
+        locationAlwaysPermission: false,
+        motionUsagePermission: false,
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         backgroundColor: '#1F6F4A',
