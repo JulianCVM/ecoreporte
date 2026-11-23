@@ -11,9 +11,7 @@ export default function ProfileScreen() {
   const version = Constants.expoConfig?.version ?? '0.0.0';
 
   return (
-    <ScreenScaffold
-      title="Perfil"
-      pending={['Inicio de sesión con Google', 'Bandeja del operador (RF07)']}>
+    <ScreenScaffold title="Perfil" pending={['Inicio de sesión con Google']}>
       <SessionCard />
       <ThemedText type="small" themeColor="textSecondary">
         Versión {version} · variante {variant} · entorno {appEnv.env}

@@ -9,6 +9,7 @@ import { Spacing } from '@/constants/theme';
 
 import { AuthActionError, signOut } from '../data/auth-repository';
 import { useSession } from '../data/use-session';
+import { isStaff, roleLabel } from '../domain/role';
 
 /** Quién inició sesión y el botón para salir (pantalla Perfil). */
 export function SessionCard() {
@@ -17,7 +18,7 @@ export function SessionCard() {
   const [loading, setLoading] = useState(false);
 
   if (session.status !== 'signed-in') return null;
-  const { displayName, email } = session.user;
+  const { displayName, email, role } = session.user;
 
   async function handleSignOut() {
     setLoading(true);
@@ -36,6 +37,7 @@ export function SessionCard() {
       <ThemedText type="small" themeColor="textSecondary">
         {email}
       </ThemedText>
+      {isStaff(role) ? <ThemedText type="small">Rol: {roleLabel(role)}</ThemedText> : null}
       <FormError message={error} />
       <PrimaryButton
         label="Cerrar sesión"
