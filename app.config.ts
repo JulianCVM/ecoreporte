@@ -90,6 +90,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
+      'expo-camera',
+      {
+        cameraPermission: 'EcoReporte usa la cámara para tomar la foto de cada reporte.',
+        // La app solo toma fotos (RF01): sin audio ni lector de códigos, el APK pide menos
+        // permisos y pesa menos.
+        microphonePermission: false,
+        recordAudioAndroid: false,
+        barcodeScannerEnabled: false,
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         backgroundColor: '#1F6F4A',
