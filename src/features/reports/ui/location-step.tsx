@@ -1,6 +1,6 @@
 import { useForegroundPermissions } from 'expo-location';
 import { useIsFocused } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 
 import { FormError } from '@/components/form-error';
@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/use-theme';
 
 import { useCurrentLocation } from '../data/use-current-location';
 import { permissionAccess } from '../domain/permission-access';
+import type { LocationReading } from '../domain/report-location';
 import { LocationStatus } from './location-status';
 import { PermissionNotice, type PermissionNoticeTexts } from './permission-notice';
 import { useRefreshOnForeground } from './use-refresh-on-foreground';
@@ -23,11 +24,16 @@ const LOCATION_NOTICE: PermissionNoticeTexts = {
     'Para activarlo, abre los ajustes de la app, entra a «Permisos», toca «Ubicación», elige «Permitir solo mientras se usa la app» y deja activa la ubicación precisa. Después vuelve a esta pantalla.',
 };
 
+type Props = {
+  /** Recibe la última lectura del GPS; `null` mientras no hay ninguna. */
+  onReadingChange: (reading: LocationReading | null) => void;
+};
+
 /**
  * Paso de la ubicación del reporte (RF01, issue #9): permiso en primer plano y lectura del GPS
- * con su precisión.
+ * con su precisión. Cada lectura nueva se le entrega al formulario, que es quien la envía.
  */
-export function LocationStep() {
+export function LocationStep({ onReadingChange }: Props) {
   const theme = useTheme();
   const isFocused = useIsFocused();
   const [permission, requestPermission, refreshPermission] = useForegroundPermissions();
@@ -36,6 +42,10 @@ export function LocationStep() {
   const { reading, error } = useCurrentLocation(access === 'granted' && isFocused);
 
   useRefreshOnForeground(refreshPermission, setPermissionError);
+
+  useEffect(() => {
+    onReadingChange(reading);
+  }, [reading, onReadingChange]);
 
   function handleRequestPermission() {
     requestPermission().catch((cause: unknown) => {
