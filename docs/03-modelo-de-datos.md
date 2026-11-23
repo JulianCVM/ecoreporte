@@ -6,20 +6,20 @@
 
 El ID lo genera la app (`doc().id`) para poder crear el reporte sin conexión y nombrar la foto igual.
 
-| Campo               | Tipo                               | Lo escribe                                                              | Notas                                                                                                       |
-| ------------------- | ---------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `authorUid`         | string                             | App (al crear)                                                          | Debe ser `request.auth.uid`                                                                                 |
-| `status`            | string                             | App: solo `pending_upload` y `cancelled`. Function y operador: el resto | Ver la máquina de estados en `02-arquitectura.md`                                                           |
-| `createdAt`         | timestamp                          | App (`serverTimestamp()`)                                               | Las reglas exigen `request.time`                                                                            |
-| `capturedAt`        | timestamp                          | App                                                                     | Hora del teléfono al tomar la foto; puede diferir de `createdAt` si no había red                            |
-| `location`          | geopoint                           | App                                                                     |                                                                                                             |
-| `locationAccuracyM` | number                             | App                                                                     | ≤ `LOCATION_MAX_ACCURACY_M`                                                                                 |
-| `geohash`           | string (9)                         | App                                                                     | Para consultas por cercanía (`geofire-common`)                                                              |
-| `note`              | string ≤ 280                       | App                                                                     | Opcional                                                                                                    |
-| `photo`             | map `{path, width, height, bytes}` | App                                                                     | `path = reports/{uid}/{reportId}.jpg`                                                                       |
-| `ai`                | map                                | **Solo la Function**                                                    | `{category, complexity, confidence, summary, containsPeople, model, promptVersion, latencyMs, evaluatedAt}` |
-| `statusHistory`     | array ≤ 20 de `{status, by, at}`   | Function y operador                                                     | Rastro de cambios                                                                                           |
-| `updatedAt`         | timestamp                          | Todos                                                                   |                                                                                                             |
+| Campo               | Tipo                               | Lo escribe                                                              | Notas                                                                                                                                                |
+| ------------------- | ---------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `authorUid`         | string                             | App (al crear)                                                          | Debe ser `request.auth.uid`                                                                                                                          |
+| `status`            | string                             | App: solo `pending_upload` y `cancelled`. Function y operador: el resto | Ver la máquina de estados en `02-arquitectura.md`                                                                                                    |
+| `createdAt`         | timestamp                          | App (`serverTimestamp()`)                                               | Las reglas exigen `request.time`                                                                                                                     |
+| `capturedAt`        | timestamp                          | App                                                                     | Hora del teléfono al tomar la foto; puede diferir de `createdAt` si no había red                                                                     |
+| `location`          | geopoint                           | App                                                                     |                                                                                                                                                      |
+| `locationAccuracyM` | number                             | App                                                                     | ≤ `LOCATION_MAX_ACCURACY_M`                                                                                                                          |
+| `geohash`           | string (9)                         | App                                                                     | Para consultas por cercanía (`geofire-common`)                                                                                                       |
+| `note`              | string ≤ 280                       | App                                                                     | Opcional                                                                                                                                             |
+| `photo`             | map `{path, width, height, bytes}` | App                                                                     | `path = reports/{uid}/{reportId}.jpg`                                                                                                                |
+| `ai`                | map                                | **Solo la Function**                                                    | `{category, complexity, confidence, summary, containsPeople, model, promptVersion, latencyMs, evaluatedAt}`                                          |
+| `statusHistory`     | array ≤ 20 de `{status, by, at}`   | Function y operador                                                     | Rastro de cambios. La Function firma con `by: system` y agrega `reason` (`ai_failed` · `ai_disabled`) cuando manda a revisión sin veredicto de la IA |
+| `updatedAt`         | timestamp                          | Todos                                                                   |                                                                                                                                                      |
 
 Valores cerrados:
 
@@ -29,6 +29,8 @@ Valores cerrados:
 ### `reports/{reportId}/evaluations/{evaluationId}`
 
 Bitácora inmutable de cada llamada a la IA (la «base de logs» del documento original): entrada (ruta de la imagen, versión del prompt, modelo), salida cruda, salida validada, latencia, error y costo estimado en tokens. Solo la lee `operator`/`admin`. Nadie la escribe desde el cliente.
+
+Un documento por intento (`classify-uploaded-photo.ts`): `{attempt, provider, model, promptVersion, photoPath, classification, rawOutput, error: {reason, message}, latencyMs, tokens: {input, output}, createdAt}`. Si el intento falló, `classification` es `null` y `error.reason` es `invalid_output`, `timeout` o `provider`.
 
 ### `alerts/{alertId}`
 

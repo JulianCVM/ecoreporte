@@ -4,6 +4,7 @@ import {
   defineSecret,
   defineString,
   select,
+  storageBucket,
 } from 'firebase-functions/params';
 
 import {
@@ -64,6 +65,14 @@ export const params = {
 
 /** Clave de la capa gratuita de Gemini; solo se usa con `AI_PROVIDER=gemini-api`. */
 export const geminiApiKey = defineSecret('GEMINI_API_KEY');
+
+/**
+ * Bucket donde la app sube las fotos; `classifyReportPhoto` escucha ese y no otro. Por defecto
+ * es el del proyecto. En local hay que fijarlo en `.env.local`: sin sesión del CLI, el emulador
+ * supone `<proyecto>.appspot.com`, que no es el bucket de `google-services.json`, y la función
+ * nunca se dispara.
+ */
+export const reportsBucket = defineString('REPORTS_BUCKET', { default: storageBucket });
 
 /** Lee todos los parámetros y los valida. Se llama dentro de cada función, no al cargar. */
 export function readServerConfig(): ServerConfig {
