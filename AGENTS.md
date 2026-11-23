@@ -134,12 +134,14 @@ Lo hace la función con el Admin SDK, y las reglas lo impiden desde el cliente.
 ```bash
 npm run verify             # app: typecheck + lint + formato + pruebas
 npm run functions:verify   # functions/: typecheck + lint + pruebas
+npm run test:rules         # reglas de Firestore y Storage contra los emuladores
 npx expo-doctor            # si cambiaste dependencias o app.config.ts
 ```
 
 `npm run verify` no revisa `functions/`: ese paquete tiene su propio typecheck, lint y Jest.
-Por eso se corren los dos (antes, `npm --prefix functions install`). Cuando existan las pruebas
-de reglas (#7), su verificación se agrega aquí.
+Por eso se corren los dos (antes, `npm --prefix functions install`). `npm run test:rules`
+levanta sus propios emuladores con Java 21: necesita los puertos libres, así que se corre con
+`npm run emulators` apagado.
 Si cambiaste algo que se ve, ábrelo en el emulador de Android (claro y oscuro) y recorre
 el flujo. Si algo falla, dilo con la salida; nunca digas «listo» con la CI en rojo. No
 desactives reglas de lint (`eslint-disable`) para esconder un problema.
