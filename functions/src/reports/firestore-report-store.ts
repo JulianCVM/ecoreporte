@@ -9,6 +9,7 @@ const EVALUATIONS = 'evaluations';
 const USERS = 'users';
 /** Contador global de llamadas a la IA: un documento por día (docs/03-modelo-de-datos.md). */
 const AI_USAGE = 'aiUsage';
+const ALERTS = 'alerts';
 /** Quién movió el estado en `statusHistory` cuando fue una función. */
 const SYSTEM_ACTOR = 'system';
 
@@ -88,15 +89,26 @@ export class FirestoreReportStore implements ReportStore {
       .add({ ...fields, createdAt: Timestamp.fromMillis(atMs) });
   }
 
-  async finish(reportId: string, outcome: FinalOutcome, atMs: number): Promise<void> {
-    await this.db
-      .collection(REPORTS)
-      .doc(reportId)
-      .update({
+  finish(reportId: string, outcome: FinalOutcome, atMs: number): Promise<void> {
+    const reference = this.db.collection(REPORTS).doc(reportId);
+    return this.db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(reference);
+      transaction.update(reference, {
         status: outcome.status,
         statusHistory: FieldValue.arrayUnion(historyEntry(outcome.status, atMs, outcome.reason)),
         updatedAt: FieldValue.serverTimestamp(),
         ...(outcome.ai ? { ai: { ...outcome.ai, evaluatedAt: Timestamp.fromMillis(atMs) } } : {}),
       });
+      if (!outcome.alert || !outcome.ai) return;
+      // El ID de la alerta es el del reporte: un reporte tiene a lo sumo una alerta.
+      transaction.set(this.db.collection(ALERTS).doc(reportId), {
+        reportId,
+        category: outcome.ai.category,
+        complexity: outcome.ai.complexity,
+        location: snapshot.get('location') ?? null,
+        status: 'open',
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    });
   }
 }

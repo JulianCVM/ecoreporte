@@ -104,6 +104,8 @@ Regla de veredicto (función pura `decideVerdict`, con pruebas):
 4. Si no → `rejected`.
 5. Si la IA falla después de `AI_MAX_ATTEMPTS`, está apagada, se alcanzó `AI_DAILY_LIMIT` o el autor pasó de `REPORTS_PER_USER_PER_DAY` → `needs_review`, con el motivo en `statusHistory`.
 
+**Alerta** (función pura `shouldAlert`, con pruebas, RF03): si hay clasificación, el veredicto no es `rejected` y la complejidad es igual o mayor que `ALERT_COMPLEXITY`, el veredicto crea `alerts/{reportId}`. Un reporte en `needs_review` con complejidad alta también alerta: puede ser urgente aunque la IA dude de la categoría.
+
 **Topes de uso** (`functions/src/reports/usage-limits.ts`, RNF05): se revisan en este orden, antes de llamar a la IA.
 
 1. **Por usuario:** cada foto que llega suma uno a `users/{uid}.reportsToday`. Si el reporte pasa de `REPORTS_PER_USER_PER_DAY`, va a revisión (`user_daily_limit`) y no gasta IA.
