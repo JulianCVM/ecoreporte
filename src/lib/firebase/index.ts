@@ -68,9 +68,14 @@ export {
   collection,
   doc,
   GeoPoint,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
   serverTimestamp,
   setDoc,
   Timestamp,
   updateDoc,
+  where,
 } from '@react-native-firebase/firestore';
 export { getMetadata, putFile, ref, setMaxUploadRetryTime } from '@react-native-firebase/storage';
