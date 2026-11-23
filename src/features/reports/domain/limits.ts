@@ -12,6 +12,9 @@ export const PHOTO_MIN_JPEG_QUALITY = 0.5;
 
 export const LOCATION_MAX_ACCURACY_M = 50;
 export const LOCATION_GOOD_ACCURACY_M = 10;
+// Cada cuánto se pide una lectura nueva mientras la pantalla Reportar está abierta: el GPS
+// tarda unos segundos en afinar y el usuario ve mejorar la precisión sin gastar batería de más.
+export const LOCATION_UPDATE_INTERVAL_MS = 2_000;
 
 export const NOTE_MAX_CHARS = 280;
 
