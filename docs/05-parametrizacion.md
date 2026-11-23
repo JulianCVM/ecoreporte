@@ -40,6 +40,7 @@ Cada valor que cambia el comportamiento está aquí con su valor por defecto, su
 | `LOCATION_GOOD_ACCURACY_M`    | 10               | —        | Meta del documento original; la app la muestra como «buena»            |
 | `LOCATION_UPDATE_INTERVAL_MS` | 2 000            | —        | Cada cuánto llega una lectura del GPS con la pantalla Reportar abierta |
 | `NOTE_MAX_CHARS`              | 280              | —        | Igual a las reglas                                                     |
+| `MY_REPORTS_LIMIT`            | 50               | 10–200   | Reportes que trae «Mis reportes», los más recientes primero            |
 | `UPLOAD_MAX_ATTEMPTS`         | 8                | 3–20     | Reintentos de la cola antes de pedir ayuda al usuario                  |
 | `UPLOAD_BACKOFF_BASE_MS`      | 2 000            | —        | Espera exponencial: 2 s, 4 s, 8 s… hasta 5 min                         |
 | `UPLOAD_ATTEMPT_TIMEOUT_MS`   | 30 000           | —        | Tope de un intento de subida; después falla y espera el reintento      |

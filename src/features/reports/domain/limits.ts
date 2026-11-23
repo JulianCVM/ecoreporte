@@ -18,6 +18,9 @@ export const LOCATION_UPDATE_INTERVAL_MS = 2_000;
 
 export const NOTE_MAX_CHARS = 280;
 
+// Cuántos reportes trae «Mis reportes»: acota las lecturas de Firestore (costo cero, ADR 0007).
+export const MY_REPORTS_LIMIT = 50;
+
 export const UPLOAD_MAX_ATTEMPTS = 8;
 export const UPLOAD_BACKOFF_BASE_MS = 2_000;
 export const UPLOAD_BACKOFF_MAX_MS = 5 * 60_000;
